@@ -15,6 +15,18 @@ import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+# Оптимизация для быстройного запуска
+import os
+from gunicorn import gunicorn
+
+# Настройки для Railway
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 16 * 1024 * 1024  # 16MB
+app.config['MAX_CONTENT_PATH'] = 100 * 1024 * 1024  # 100MB
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMES'] = ['session']
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 часа
 
 load_dotenv()
 
@@ -1422,4 +1434,33 @@ def bad_request_error(error):
 # Run app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+
+    # Оптимизация для продакшена
+    workers = int(os.environ.get('WEB_CONCURRENCY', '1'))
+    timeout = int(os.environ.get('GUNICORN_TIMEOUT', '120'))
+
+    if os.getenv('RAILWAY_ENVIRONMENT') == 'production':
+        # В Railway используем одного воркера для экономии ресурсов
+        workers = 1
+        timeout = 120
+
+    # Запуск с gunicorn
+    try:
+        from gunicorn.app import StandaloneApplication
+
+        options = {
+            'bind': f'0.0.0.0:{port}',
+            'workers': workers,
+            'timeout': timeout,
+            'max_requests': 500,
+            'preload_app': True,
+            'worker_class': 'sync',
+            'threads': workers,
+            'max_requests': 500,
+            'preload': True
+        }
+
+        StandaloneApplication(app, **options).run()
+    except ImportError:
+        # Fallback на обычный запуск
+        app.run(host='0.0.0.0', port=port, debug=False)

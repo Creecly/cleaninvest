@@ -1,9 +1,10 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "NIXPACKS",
+    "buildCommand": "pip install -r requirements.txt && python -c 'from app import app; app.run()'"
   },
   "deploy": {
-    "startCommand": "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60 --max-requests 1000 --preload",
+    "startCommand": "python -c 'from app import app; app.run()'",
     "healthcheckPath": "/",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE"
