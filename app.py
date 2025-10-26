@@ -13,9 +13,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Настройка базы данных для Railway
+# Database configuration
 database_url = os.getenv('DATABASE_URL', 'sqlite:///cleaninvest.db')
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Настройки почты
+# Mail configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
@@ -33,12 +33,13 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
+# Initialize extensions
 mail = Mail(app)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
 
-# Модели
+# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(80), unique=True, nullable=False)
@@ -199,382 +200,166 @@ class UserInvestment(db.Model):
         }
 
 
-# Функции отправки email
+# Email functions
 def send_welcome_email(user, password):
     try:
         msg = Message(
-            subject='¡Bienvenido a Clean.Invest! 🚀 Tu Futuro Financiero Comienza Ahora',
+            subject='¡Bienvenido a Clean.Invest! 🚀',
             sender=app.config['MAIL_DEFAULT_SENDER'],
             recipients=[user.email]
         )
-
         msg.html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Bienvenido a Clean.Invest</title>
-            <style>
-                body {{
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    max-width: 600px;
-                    margin: 0 auto;
-                    padding: 20px;
-                    background-color: #f4f4f4;
-                }}
-                .header {{
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 40px;
-                    text-align: center;
-                    border-radius: 10px 10px 0 0;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }}
-                .header h1 {{
-                    margin: 0;
-                    font-size: 32px;
-                    font-weight: 700;
-                }}
-                .content {{
-                    background: white;
-                    padding: 40px;
-                    border-radius: 0 0 10px 10px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }}
-                .info-box {{
-                    background: linear-gradient(135deg, #f8f9ff 0%, #e8ecff 100%);
-                    padding: 30px;
-                    border-left: 5px solid #667eea;
-                    margin: 30px 0;
-                    border-radius: 8px;
-                }}
-                .credential {{
-                    background: white;
-                    padding: 15px;
-                    margin: 10px 0;
-                    border-radius: 5px;
-                    border: 1px solid #e0e0e0;
-                }}
-                .credential strong {{
-                    color: #667eea;
-                    display: inline-block;
-                    width: 100px;
-                }}
-                .button {{
-                    display: inline-block;
-                    padding: 15px 40px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 30px;
-                    margin: 30px 0;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-                }}
-                .warning {{
-                    background: #fff3cd;
-                    color: #856404;
-                    padding: 15px;
-                    border-radius: 5px;
-                    margin: 20px 0;
-                    border-left: 4px solid #ffc107;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>¡Bienvenido a Clean.Invest! 🚀</h1>
-                <p>Has abierto exitosamente la puerta a tu futuro financiero próspero</p>
-            </div>
-            <div class="content">
-                <p>Estimado/a <strong>{user.name}</strong>,</p>
-                <p>¡Felicidades! Te has unido a la plataforma de inversión #1.</p>
-                <div class="info-box">
-                    <h3>🔐 Tus Datos de Acceso</h3>
-                    <div class="credential">
-                        <strong>Usuario:</strong> {user.nickname}
-                    </div>
-                    <div class="credential">
-                        <strong>Contraseña:</strong> {password}
-                    </div>
-                </div>
-                <div class="warning">
-                    <strong>⚠️ Importante:</strong> Guarda esta información en un lugar seguro.
-                </div>
-                <p style="text-align: center;">
-                    <a href="{os.getenv('SITE_URL', 'http://localhost:5000')}" class="button">Comenzar a Invertir Ahora</a>
-                </p>
-                <p>Tu cuenta ya ha sido creada con un balance inicial de <strong>${user.balance:.2f}</strong></p>
-                <p>Atentamente,<br><strong>El equipo de Clean.Invest</strong></p>
-            </div>
-        </body>
-        </html>
+        <h1>Bienvenido {user.name}!</h1>
+        <p>Tu cuenta ha sido creada con balance inicial de ${user.balance:.2f}</p>
+        <p>Usuario: {user.nickname}</p>
+        <p>Contraseña: {password}</p>
         """
-
         mail.send(msg)
-        print(f"✅ Email enviado a {user.email}")
         return True
     except Exception as e:
-        print(f"❌ Error al enviar email: {str(e)}")
+        print(f"Email error: {e}")
         return False
 
 
 def send_stock_growth_email(user, company, growth_percentage):
     try:
         msg = Message(
-            subject='🚀 ¡ALERTA DE CRECIMIENTO! Tu inversión está disparada - Clean.Invest',
+            subject='🚀 ¡ALERTA DE CRECIMIENTO!',
             sender=app.config['MAIL_DEFAULT_SENDER'],
             recipients=[user.email]
         )
-
         msg.html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Alerta de Crecimiento</title>
-            <style>
-                .alert-header {{
-                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                    color: white;
-                    padding: 40px;
-                    text-align: center;
-                }}
-                .growth-box {{
-                    background: #ecfdf5;
-                    padding: 30px;
-                    border-left: 5px solid #10b981;
-                    margin: 30px 0;
-                    text-align: center;
-                }}
-                .growth-percentage {{
-                    font-size: 48px;
-                    font-weight: 700;
-                    color: #10b981;
-                }}
-                .button {{
-                    display: inline-block;
-                    padding: 15px 40px;
-                    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 30px;
-                    margin: 20px 0;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="alert-header">
-                <h1>🚀 ¡ALERTA URGENTE!</h1>
-                <p>Tu inversión está disparada</p>
-            </div>
-            <div class="content">
-                <p>Estimado/a <strong>{user.name}</strong>,</p>
-                <div class="growth-box">
-                    <div class="company-name">{company.name}</div>
-                    <div class="growth-percentage">+{growth_percentage}%</div>
-                    <p>CRECIMIENTO EXPONENCIAL</p>
-                </div>
-                <p style="text-align: center;">
-                    <a href="{os.getenv('SITE_URL', 'http://localhost:5000')}" class="button">Vender Acciones Ahora</a>
-                </p>
-                <p>Atentamente,<br><strong>El equipo de Clean.Invest</strong></p>
-            </div>
-        </body>
-        </html>
+        <h1>¡Tu inversión en {company.name} creció {growth_percentage}%!</h1>
+        <p>Considera vender para asegurar ganancias.</p>
         """
-
         mail.send(msg)
-        print(f"✅ Email de crecimiento enviado a {user.email}")
         return True
     except Exception as e:
-        print(f"❌ Error al enviar email de crecimiento: {str(e)}")
+        print(f"Growth email error: {e}")
         return False
 
 
-# Инициализация базы данных с обработкой ошибок
-def init_database():
-    with app.app_context():
-        try:
-            # Проверяем существование таблиц
-            inspector = db.inspect(db.engine)
-            existing_tables = inspector.get_table_names()
+# Initialize database
+with app.app_context():
+    try:
+        db.create_all()
 
-            if not existing_tables:
-                db.create_all()
-                print("✅ База данных создана")
-            else:
-                print("✅ Таблицы уже существуют")
+        # Check and add is_read column if needed
+        from sqlalchemy import text
 
-        except Exception as e:
-            print(f"⚠️ Ошибка при инициализации БД: {e}")
+        inspector = db.inspect(db.engine)
+        columns = inspector.get_columns('chat_message')
+        has_is_read = any(column['name'] == 'is_read' for column in columns)
 
-        # Проверяем и добавляем столбец is_read если нужно
-        try:
-            inspector = db.inspect(db.engine)
-            if 'chat_message' in inspector.get_table_names():
-                columns = inspector.get_columns('chat_message')
-                has_is_read = any(column['name'] == 'is_read' for column in columns)
+        if not has_is_read:
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE chat_message ADD COLUMN is_read BOOLEAN DEFAULT 0"))
 
-                if not has_is_read:
-                    with db.engine.connect() as conn:
-                        conn.execute(db.text("ALTER TABLE chat_message ADD COLUMN is_read BOOLEAN DEFAULT 0"))
-                    print("✅ Столбец is_read добавлен в таблицу chat_message")
-        except Exception as e:
-            print(f"⚠️ Ошибка при добавлении столбца is_read: {e}")
+        # Add companies if none exist
+        if Company.query.count() == 0:
+            companies = [
+                {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energía renovable", "base_price": 25.50,
+                 "description": "Líder en energía solar", "icon": "fa-leaf"},
+                {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial", "base_price": 120.75,
+                 "description": "Desarrollo de IA", "icon": "fa-microchip"},
+                {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
+                 "description": "Exploración espacial", "icon": "fa-rocket"},
+                {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnología", "base_price": 85.40,
+                 "description": "Investigación médica", "icon": "fa-dna"},
+                {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
+                 "description": "Vehículos eléctricos", "icon": "fa-car"},
+            ]
 
-        # Добавляем компании если их нет
-        try:
-            if Company.query.count() == 0:
-                companies = [
-                    {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energía renovable", "base_price": 25.50,
-                     "description": "Líder en energía solar y eólica", "icon": "fa-leaf"},
-                    {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial",
-                     "base_price": 120.75, "description": "Desarrollo de IA de vanguardia", "icon": "fa-microchip"},
-                    {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
-                     "description": "Exploración espacial comercial", "icon": "fa-rocket"},
-                    {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnología", "base_price": 85.40,
-                     "description": "Investigación médica avanzada", "icon": "fa-dna"},
-                    {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
-                     "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
-                    {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
-                     "description": "Soluciones de computación en la nube", "icon": "fa-cloud"},
-                    {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
-                     "description": "Tecnología alimentaria sostenible", "icon": "fa-utensils"},
-                    {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
-                     "description": "Automatización industrial avanzada", "icon": "fa-robot"},
-                    {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
-                     "description": "Tecnologías de purificación de agua", "icon": "fa-tint"},
-                    {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
-                     "description": "Computación cuántica de próxima generación", "icon": "fa-atom"},
-                    {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
-                     "description": "Ropa sostenible y ética", "icon": "fa-tshirt"},
-                    {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
-                     "description": "Sistemas de hogar inteligente", "icon": "fa-home"},
-                    {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
-                     "description": "Experiencias de realidad virtual inmersivas", "icon": "fa-vr-cardboard"},
-                    {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
-                     "description": "Producción de biocombustibles sostenibles", "icon": "fa-gas-pump"},
-                    {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
-                     "description": "Tecnologías para el cuidado de la salud", "icon": "fa-heartbeat"},
-                    {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
-                     "description": "Seguridad de activos digitales", "icon": "fa-lock"},
-                    {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
-                     "description": "Soluciones de agricultura urbana", "icon": "fa-seedling"},
-                    {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
-                     "description": "Materiales avanzados a nanoescala", "icon": "fa-atom"},
-                    {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
-                     "description": "Plataformas de aprendizaje digital", "icon": "fa-graduation-cap"},
-                    {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
-                     "description": "Tecnología de conducción autónoma", "icon": "fa-car-side"},
-                    {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
-                     "description": "Soluciones de almacenamiento de energía", "icon": "fa-battery-full"},
-                    {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
-                     "description": "Tecnologías de limpieza oceánica", "icon": "fa-water"},
-                    {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
-                     "description": "Protección de datos y sistemas", "icon": "fa-shield-alt"},
-                    {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
-                     "description": "Experiencias turísticas espaciales", "icon": "fa-space-shuttle"},
-                    {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
-                     "description": "Diagnóstico médico con IA", "icon": "fa-user-md"}
-                ]
+            for company_data in companies:
+                company = Company(**company_data)
+                db.session.add(company)
 
-                for company_data in companies:
-                    company = Company(**company_data)
-                    db.session.add(company)
-
-                db.session.commit()
-                print("✅ Compañías iniciales creadы")
-            else:
-                print("✅ Compañías уже существуют")
-        except Exception as e:
-            print(f"⚠️ Ошибка при добавлении компаний: {e}")
+            db.session.commit()
+            print("✅ Initial companies created")
+    except Exception as e:
+        print(f"Database init error: {e}")
 
 
-# Инициализируем базу данных
-init_database()
-
-
-# Роуты
+# Routes
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return f"Template error: {str(e)}", 500
 
 
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    name = data.get('name', '').strip()
-    nickname = data.get('nickname', '').strip()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        nickname = data.get('nickname', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
 
-    if not all([name, nickname, email, password]):
-        return jsonify({'error': 'Todos los campos son obligatorios'}), 400
+        if not all([name, nickname, email, password]):
+            return jsonify({'error': 'Todos los campos son obligatorios'}), 400
 
-    if len(name) < 2:
-        return jsonify({'error': 'El nombre debe tener al menos 2 caracteres'}), 400
+        if len(name) < 2:
+            return jsonify({'error': 'El nombre debe tener al menos 2 caracteres'}), 400
 
-    if len(nickname) < 4:
-        return jsonify({'error': 'El nombre de usuario debe tener al menos 4 caracteres'}), 400
+        if len(nickname) < 4:
+            return jsonify({'error': 'El nombre de usuario debe tener al menos 4 caracteres'}), 400
 
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_regex, email):
-        return jsonify({'error': 'Formato de email inválido'}), 400
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email):
+            return jsonify({'error': 'Formato de email inválido'}), 400
 
-    if len(password) < 7:
-        return jsonify({'error': 'La contraseña debe tener al menos 7 caracteres'}), 400
+        if len(password) < 7:
+            return jsonify({'error': 'La contraseña debe tener al menos 7 caracteres'}), 400
 
-    if User.query.filter_by(nickname=nickname).first():
-        return jsonify({'error': 'Este nombre de usuario ya está en uso'}), 400
+        if User.query.filter_by(nickname=nickname).first():
+            return jsonify({'error': 'Este nombre de usuario ya está en uso'}), 400
 
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Este email ya está registrado'}), 400
+        if User.query.filter_by(email=email).first():
+            return jsonify({'error': 'Este email ya está registrado'}), 400
 
-    user = User(name=name, nickname=nickname, email=email)
-    user.set_password(password)
-    db.session.add(user)
-    db.session.commit()
+        user = User(name=name, nickname=nickname, email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
 
-    print(f"📧 Enviando email de bienvenida a {email}...")
-    email_sent = send_welcome_email(user, password)
+        email_sent = send_welcome_email(user, password)
 
-    session['user_id'] = user.id
-    session.permanent = True
+        session['user_id'] = user.id
+        session.permanent = True
 
-    response_data = {
-        'message': '¡Registro exitoso! Bienvenido a Clean.Invest',
-        'user': user.to_dict(),
-        'email_sent': email_sent
-    }
-
-    if not email_sent:
-        response_data['warning'] = 'Registro exitoso pero no se pudo enviar el email de bienvenida.'
-
-    return jsonify(response_data)
+        return jsonify({
+            'message': '¡Registro exitoso! Bienvenido a Clean.Invest',
+            'user': user.to_dict(),
+            'email_sent': email_sent
+        })
+    except Exception as e:
+        return jsonify({'error': f'Error en registro: {str(e)}'}), 500
 
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    nickname = data.get('nickname', '').strip()
-    password = data.get('password', '')
+    try:
+        data = request.get_json()
+        nickname = data.get('nickname', '').strip()
+        password = data.get('password', '')
 
-    if not nickname or not password:
-        return jsonify({'error': 'El nombre de usuario y la contraseña son obligatorios'}), 400
+        if not nickname or not password:
+            return jsonify({'error': 'El nombre de usuario y la contraseña son obligatorios'}), 400
 
-    user = User.query.filter_by(nickname=nickname).first()
-    if user and user.check_password(password):
-        user.last_login = datetime.now(timezone.utc)
-        db.session.commit()
-        session['user_id'] = user.id
-        session.permanent = True
-        return jsonify({'message': '¡Inicio de sesión exitoso!', 'user': user.to_dict()})
-    else:
-        return jsonify({'error': 'Credenciales inválidas'}), 401
+        user = User.query.filter_by(nickname=nickname).first()
+        if user and user.check_password(password):
+            user.last_login = datetime.now(timezone.utc)
+            db.session.commit()
+            session['user_id'] = user.id
+            session.permanent = True
+            return jsonify({'message': '¡Inicio de sesión exitoso!', 'user': user.to_dict()})
+        else:
+            return jsonify({'error': 'Credenciales inválidas'}), 401
+    except Exception as e:
+        return jsonify({'error': f'Error en login: {str(e)}'}), 500
 
 
 @app.route('/logout', methods=['POST'])
@@ -595,56 +380,13 @@ def get_profile():
     return jsonify({'user': user.to_dict()})
 
 
-@app.route('/profile', methods=['PUT'])
-def update_profile():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    data = request.get_json()
-
-    if 'name' in data:
-        user.name = data['name'].strip()
-    if 'full_name' in data:
-        user.full_name = data['full_name'].strip()
-    if 'phone' in data:
-        phone = data['phone'].strip()
-        if phone and not re.match(r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$', phone):
-            return jsonify({'error': 'Formato de teléfono inválido'}), 400
-        user.phone = phone
-
-    db.session.commit()
-    return jsonify({'message': 'Perfil actualizado correctamente', 'user': user.to_dict()})
-
-
-@app.route('/set_avatar', methods=['POST'])
-def set_avatar():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    data = request.get_json()
-    avatar_url = data.get('avatar_url')
-
-    if not avatar_url:
-        return jsonify({'error': 'La URL del avatar es requerida'}), 400
-
-    user.avatar_url = avatar_url
-    db.session.commit()
-
-    return jsonify({'message': 'Avatar actualizado correctamente', 'avatar_url': user.avatar_url})
-
-
 @app.route('/companies', methods=['GET'])
 def get_companies():
-    companies = Company.query.all()
-    return jsonify({'companies': [company.to_dict() for company in companies]})
+    try:
+        companies = Company.query.all()
+        return jsonify({'companies': [company.to_dict() for company in companies]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/investments', methods=['GET'])
@@ -825,7 +567,7 @@ def admin_assign_admin():
 
     admin = db.session.get(User, session['user_id'])
     if not admin or not admin.is_owner:
-        return jsonify({'error': 'Acceso denegado. Solo el owner puede asignar admins'}), 403
+        return jsonify({'error': 'Acceso denegado'}), 403
 
     data = request.get_json()
     nickname = data.get('nickname', '').strip()
@@ -855,7 +597,7 @@ def admin_remove_admin():
 
     admin = db.session.get(User, session['user_id'])
     if not admin or not admin.is_owner:
-        return jsonify({'error': 'Acceso denegado. Solo el owner puede remover admins'}), 403
+        return jsonify({'error': 'Acceso denegado'}), 403
 
     data = request.get_json()
     nickname = data.get('nickname', '').strip()
@@ -963,24 +705,7 @@ def admin_send_bulk_email():
                 sender=app.config['MAIL_DEFAULT_SENDER'],
                 recipients=[email]
             )
-            msg.html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>{subject}</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; }}
-                    .header {{ background: #667eea; color: white; padding: 20px; text-align: center; }}
-                    .content {{ padding: 20px; background: white; }}
-                </style>
-            </head>
-            <body>
-                <div class="header"><h1>{subject}</h1></div>
-                <div class="content">{message.replace('\n', '<br>')}</div>
-            </body>
-            </html>
-            """
+            msg.html = f"<h1>{subject}</h1><p>{message.replace(chr(10), '<br>')}</p>"
             mail.send(msg)
             success_count += 1
         except Exception as e:
@@ -995,7 +720,7 @@ def admin_send_bulk_email():
     })
 
 
-# Роуты чата поддержки
+# Support chat routes
 @app.route('/support/chat/create', methods=['POST'])
 def create_support_chat():
     if 'user_id' not in session:
@@ -1357,6 +1082,66 @@ def switch_account():
         return jsonify({'error': 'Credenciales inválidas'}), 401
 
 
+@app.route('/set_avatar', methods=['POST'])
+def set_avatar():
+    if 'user_id' not in session:
+        return jsonify({'error': 'No has iniciado sesión'}), 401
+
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    data = request.get_json()
+    avatar_url = data.get('avatar_url')
+
+    if not avatar_url:
+        return jsonify({'error': 'La URL del avatar es requerida'}), 400
+
+    user.avatar_url = avatar_url
+    db.session.commit()
+
+    return jsonify({'message': 'Avatar actualizado correctamente', 'avatar_url': user.avatar_url})
+
+
+@app.route('/profile', methods=['PUT'])
+def update_profile():
+    if 'user_id' not in session:
+        return jsonify({'error': 'No has iniciado sesión'}), 401
+
+    user = db.session.get(User, session['user_id'])
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    data = request.get_json()
+
+    if 'name' in data:
+        user.name = data['name'].strip()
+    if 'full_name' in data:
+        user.full_name = data['full_name'].strip()
+    if 'phone' in data:
+        phone = data['phone'].strip()
+        if phone and not re.match(r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$', phone):
+            return jsonify({'error': 'Formato de teléfono inválido'}), 400
+        user.phone = phone
+
+    db.session.commit()
+
+    return jsonify({'message': 'Perfil actualizado correctamente', 'user': user.to_dict()})
+
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({'error': 'Not found'}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return jsonify({'error': 'Internal server error'}), 500
+
+
+# Run app
 if __name__ == '__main__':
-    print("🚀 Iniciando Clean.Invest...")
-    app.run(debug=False, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
