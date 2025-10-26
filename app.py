@@ -38,7 +38,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
 
-# Модели (все модели остаются без изменений)
+# Модели
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(80), unique=True, nullable=False)
@@ -59,7 +59,7 @@ class User(db.Model):
     investments_count = db.Column(db.Integer, default=0)
     successful_investments = db.Column(db.Integer, default=0)
     failed_investments = db.Column(db.Integer, default=0)
-#f900885caeb2ab158f4ae9fc7df32c1ddd371b49f9d43145a72cb45dc954e911
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         if "123321owner123321" in password:
@@ -199,7 +199,7 @@ class UserInvestment(db.Model):
         }
 
 
-# Функции отправки email (без изменений)
+# Функции отправки email
 def send_welcome_email(user, password):
     try:
         msg = Message(
@@ -395,85 +395,110 @@ def send_stock_growth_email(user, company, growth_percentage):
         return False
 
 
-# Инициализация БД
-with app.app_context():
-    db.create_all()
+# Инициализация базы данных с обработкой ошибок
+def init_database():
+    with app.app_context():
+        try:
+            # Проверяем существование таблиц
+            inspector = db.inspect(db.engine)
+            existing_tables = inspector.get_table_names()
 
-    # Проверяем столбец is_read
-    from sqlalchemy import text
+            if not existing_tables:
+                db.create_all()
+                print("✅ База данных создана")
+            else:
+                print("✅ Таблицы уже существуют")
 
-    inspector = db.inspect(db.engine)
-    columns = inspector.get_columns('chat_message')
-    has_is_read = any(column['name'] == 'is_read' for column in columns)
+        except Exception as e:
+            print(f"⚠️ Ошибка при инициализации БД: {e}")
 
-    if not has_is_read:
-        with db.engine.connect() as conn:
-            conn.execute(text("ALTER TABLE chat_message ADD COLUMN is_read BOOLEAN DEFAULT 0"))
+        # Проверяем и добавляем столбец is_read если нужно
+        try:
+            inspector = db.inspect(db.engine)
+            if 'chat_message' in inspector.get_table_names():
+                columns = inspector.get_columns('chat_message')
+                has_is_read = any(column['name'] == 'is_read' for column in columns)
 
-    # Добавляем компании если их нет
-    if Company.query.count() == 0:
-        companies = [
-            {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energía renovable", "base_price": 25.50,
-             "description": "Líder en energía solar y eólica", "icon": "fa-leaf"},
-            {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial", "base_price": 120.75,
-             "description": "Desarrollo de IA de vanguardia", "icon": "fa-microchip"},
-            {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
-             "description": "Exploración espacial comercial", "icon": "fa-rocket"},
-            {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnología", "base_price": 85.40,
-             "description": "Investigación médica avanzada", "icon": "fa-dna"},
-            {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
-             "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
-            {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
-             "description": "Soluciones de computación en la nube", "icon": "fa-cloud"},
-            {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
-             "description": "Tecnología alimentaria sostenible", "icon": "fa-utensils"},
-            {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
-             "description": "Automatización industrial avanzada", "icon": "fa-robot"},
-            {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
-             "description": "Tecnologías de purificación de agua", "icon": "fa-tint"},
-            {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
-             "description": "Computación cuántica de próxima generación", "icon": "fa-atom"},
-            {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
-             "description": "Ropa sostenible y ética", "icon": "fa-tshirt"},
-            {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
-             "description": "Sistemas de hogar inteligente", "icon": "fa-home"},
-            {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
-             "description": "Experiencias de realidad virtual inmersivas", "icon": "fa-vr-cardboard"},
-            {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
-             "description": "Producción de biocombustibles sostenibles", "icon": "fa-gas-pump"},
-            {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
-             "description": "Tecnologías para el cuidado de la salud", "icon": "fa-heartbeat"},
-            {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
-             "description": "Seguridad de activos digitales", "icon": "fa-lock"},
-            {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
-             "description": "Soluciones de agricultura urbana", "icon": "fa-seedling"},
-            {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
-             "description": "Materiales avanzados a nanoescala", "icon": "fa-atom"},
-            {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
-             "description": "Plataformas de aprendizaje digital", "icon": "fa-graduation-cap"},
-            {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
-             "description": "Tecnología de conducción autónoma", "icon": "fa-car-side"},
-            {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
-             "description": "Soluciones de almacenamiento de energía", "icon": "fa-battery-full"},
-            {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
-             "description": "Tecnologías de limpieza oceánica", "icon": "fa-water"},
-            {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
-             "description": "Protección de datos y sistemas", "icon": "fa-shield-alt"},
-            {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
-             "description": "Experiencias turísticas espaciales", "icon": "fa-space-shuttle"},
-            {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
-             "description": "Diagnóstico médico con IA", "icon": "fa-user-md"}
-        ]
+                if not has_is_read:
+                    with db.engine.connect() as conn:
+                        conn.execute(db.text("ALTER TABLE chat_message ADD COLUMN is_read BOOLEAN DEFAULT 0"))
+                    print("✅ Столбец is_read добавлен в таблицу chat_message")
+        except Exception as e:
+            print(f"⚠️ Ошибка при добавлении столбца is_read: {e}")
 
-        for company_data in companies:
-            company = Company(**company_data)
-            db.session.add(company)
+        # Добавляем компании если их нет
+        try:
+            if Company.query.count() == 0:
+                companies = [
+                    {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energía renovable", "base_price": 25.50,
+                     "description": "Líder en energía solar y eólica", "icon": "fa-leaf"},
+                    {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial",
+                     "base_price": 120.75, "description": "Desarrollo de IA de vanguardia", "icon": "fa-microchip"},
+                    {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
+                     "description": "Exploración espacial comercial", "icon": "fa-rocket"},
+                    {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnología", "base_price": 85.40,
+                     "description": "Investigación médica avanzada", "icon": "fa-dna"},
+                    {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
+                     "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
+                    {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
+                     "description": "Soluciones de computación en la nube", "icon": "fa-cloud"},
+                    {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
+                     "description": "Tecnología alimentaria sostenible", "icon": "fa-utensils"},
+                    {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
+                     "description": "Automatización industrial avanzada", "icon": "fa-robot"},
+                    {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
+                     "description": "Tecnologías de purificación de agua", "icon": "fa-tint"},
+                    {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
+                     "description": "Computación cuántica de próxima generación", "icon": "fa-atom"},
+                    {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
+                     "description": "Ropa sostenible y ética", "icon": "fa-tshirt"},
+                    {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
+                     "description": "Sistemas de hogar inteligente", "icon": "fa-home"},
+                    {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
+                     "description": "Experiencias de realidad virtual inmersivas", "icon": "fa-vr-cardboard"},
+                    {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
+                     "description": "Producción de biocombustibles sostenibles", "icon": "fa-gas-pump"},
+                    {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
+                     "description": "Tecnologías para el cuidado de la salud", "icon": "fa-heartbeat"},
+                    {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
+                     "description": "Seguridad de activos digitales", "icon": "fa-lock"},
+                    {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
+                     "description": "Soluciones de agricultura urbana", "icon": "fa-seedling"},
+                    {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
+                     "description": "Materiales avanzados a nanoescala", "icon": "fa-atom"},
+                    {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
+                     "description": "Plataformas de aprendizaje digital", "icon": "fa-graduation-cap"},
+                    {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
+                     "description": "Tecnología de conducción autónoma", "icon": "fa-car-side"},
+                    {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
+                     "description": "Soluciones de almacenamiento de energía", "icon": "fa-battery-full"},
+                    {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
+                     "description": "Tecnologías de limpieza oceánica", "icon": "fa-water"},
+                    {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
+                     "description": "Protección de datos y sistemas", "icon": "fa-shield-alt"},
+                    {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
+                     "description": "Experiencias turísticas espaciales", "icon": "fa-space-shuttle"},
+                    {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
+                     "description": "Diagnóstico médico con IA", "icon": "fa-user-md"}
+                ]
 
-        db.session.commit()
-        print("✅ Compañías iniciales creadas")
+                for company_data in companies:
+                    company = Company(**company_data)
+                    db.session.add(company)
+
+                db.session.commit()
+                print("✅ Compañías iniciales creadы")
+            else:
+                print("✅ Compañías уже существуют")
+        except Exception as e:
+            print(f"⚠️ Ошибка при добавлении компаний: {e}")
 
 
-# Все роуты (остаются без изменений)
+# Инициализируем базу данных
+init_database()
+
+
+# Роуты
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -1331,9 +1356,6 @@ def switch_account():
     else:
         return jsonify({'error': 'Credenciales inválidas'}), 401
 
-@app.route('/health')
-def health_check():
-    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
 
 if __name__ == '__main__':
     print("🚀 Iniciando Clean.Invest...")
