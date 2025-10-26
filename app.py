@@ -10,11 +10,19 @@ import uuid
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import time
+import logging
 
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Disable CSRF for simplicity in production
+app.config['WTF_CSRF_ENABLED'] = False
 
 # Database configuration
 database_url = os.getenv('DATABASE_URL', 'sqlite:///cleaninvest.db')
@@ -22,10 +30,16 @@ if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+    'pool_timeout': 20,
+    'max_overflow': 10
+}
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Mail configuration with timeout
+# Mail configuration
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
@@ -41,7 +55,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
 
-# Models
+# Models (same as before)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(80), unique=True, nullable=False)
@@ -202,77 +216,6 @@ class UserInvestment(db.Model):
         }
 
 
-# Simple email functions
-def send_welcome_email(user, password):
-    try:
-        msg = Message(
-            subject='Bienvenido a Clean.Invest 🚀',
-            sender=app.config['MAIL_DEFAULT_SENDER'],
-            recipients=[user.email]
-        )
-
-        msg.body = f"""¡Hola {user.name}!
-
-¡Bienvenido a Clean.Invest! Tu cuenta ha sido creada exitosamente.
-
-📋 TUS DATOS DE ACCESO:
-• Usuario: {user.nickname}
-• Contraseña: {password}
-• Email: {user.email}
-
-💰 Balance inicial: ${user.balance:.2f}
-
-🌐 Sitio web: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
-
-¡Estamos aquí para ayudarte a alcanzar tus metas financieras!
-
-Atentamente,
-El equipo de Clean.Invest
----
-Este es un correo automático. Por favor no respondas a este mensaje.
-"""
-
-        mail.send(msg)
-        return True
-    except Exception as e:
-        return False
-
-
-def send_stock_growth_email(user, company, growth_percentage):
-    try:
-        msg = Message(
-            subject=f'🚀 ALERTA: {company.name} +{growth_percentage:.1f}%',
-            sender=app.config['MAIL_DEFAULT_SENDER'],
-            recipients=[user.email]
-        )
-
-        msg.body = f"""¡Hola {user.name}!
-
-🚈 ALERTA URGENTE DE CRECIMIENTO 🚈
-
-Tu inversión en {company.name} ha crecido un {growth_percentage:.1f}%!
-
-💰 Precio actual de la acción: ${company.base_price * (1 + growth_percentage / 100):.2f}
-📈 Ganancia potencial: ¡Considera vender para asegurar tus ganancias!
-
-⚠️ El mercado es volátil. Esta oportunidad puede no durar mucho.
-
-🌐 Accede a tu cuenta: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
-
-¡No dejes pasar esta oportunidad!
-
-Atentamente,
-El equipo de Clean.Invest
----
-Este es un correo automático con información importante sobre tus inversiones.
-"""
-
-        mail.send(msg)
-        return True
-    except Exception as e:
-        return False
-
-
 # Initialize database
 with app.app_context():
     try:
@@ -302,46 +245,6 @@ with app.app_context():
                  "description": "Investigación médica avanzada", "icon": "fa-dna"},
                 {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
                  "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
-                {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
-                 "description": "Soluciones en la nube", "icon": "fa-cloud"},
-                {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
-                 "description": "Tecnología alimentaria", "icon": "fa-utensils"},
-                {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
-                 "description": "Automatización industrial", "icon": "fa-robot"},
-                {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
-                 "description": "Purificación de agua", "icon": "fa-tint"},
-                {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
-                 "description": "Computación cuántica", "icon": "fa-atom"},
-                {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
-                 "description": "Ropa sostenible", "icon": "fa-tshirt"},
-                {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
-                 "description": "Hogar inteligente", "icon": "fa-home"},
-                {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
-                 "description": "Realidad virtual", "icon": "fa-vr-cardboard"},
-                {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
-                 "description": "Biocombustibles", "icon": "fa-gas-pump"},
-                {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
-                 "description": "Tecnología médica", "icon": "fa-heartbeat"},
-                {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
-                 "description": "Seguridad cripto", "icon": "fa-lock"},
-                {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
-                 "description": "Agricultura urbana", "icon": "fa-seedling"},
-                {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
-                 "description": "Materiales nanotecnológicos", "icon": "fa-atom"},
-                {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
-                 "description": "Educación digital", "icon": "fa-graduation-cap"},
-                {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
-                 "description": "Conducción autónoma", "icon": "fa-car-side"},
-                {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
-                 "description": "Almacenamiento energético", "icon": "fa-battery-full"},
-                {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
-                 "description": "Limpieza oceánica", "icon": "fa-water"},
-                {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
-                 "description": "Seguridad digital", "icon": "fa-shield-alt"},
-                {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
-                 "description": "Turismo espacial", "icon": "fa-space-shuttle"},
-                {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
-                 "description": "IA médica", "icon": "fa-user-md"}
             ]
 
             for company_data in companies:
@@ -349,8 +252,16 @@ with app.app_context():
                 db.session.add(company)
 
             db.session.commit()
+            logger.info("Initial companies created")
     except Exception as e:
-        pass
+        logger.error(f"Database init error: {e}")
+
+
+# Helper function to handle database errors
+def handle_db_error(e):
+    logger.error(f"Database error: {str(e)}")
+    db.session.rollback()
+    return jsonify({'error': 'Database error. Please try again.'}), 500
 
 
 # Routes
@@ -359,6 +270,7 @@ def index():
     try:
         return render_template('index.html')
     except Exception as e:
+        logger.error(f"Template error: {str(e)}")
         return f"Template error: {str(e)}", 500
 
 
@@ -366,6 +278,9 @@ def index():
 def register():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
+
         name = data.get('name', '').strip()
         nickname = data.get('nickname', '').strip()
         email = data.get('email', '').strip()
@@ -398,16 +313,6 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        # Send email in background
-        import threading
-        def send_email_background():
-            with app.app_context():
-                send_welcome_email(user, password)
-
-        email_thread = threading.Thread(target=send_email_background)
-        email_thread.daemon = True
-        email_thread.start()
-
         session['user_id'] = user.id
         session.permanent = True
 
@@ -418,14 +323,17 @@ def register():
         })
 
     except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': 'Error en registro. Inténtalo de nuevo.'}), 500
+        logger.error(f"Registration error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
+
         nickname = data.get('nickname', '').strip()
         password = data.get('password', '')
 
@@ -442,7 +350,8 @@ def login():
         else:
             return jsonify({'error': 'Credenciales inválidas'}), 401
     except Exception as e:
-        return jsonify({'error': 'Error en login. Inténtalo de nuevo.'}), 500
+        logger.error(f"Login error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/logout', methods=['POST'])
@@ -453,14 +362,18 @@ def logout():
 
 @app.route('/profile', methods=['GET'])
 def get_profile():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    return jsonify({'user': user.to_dict()})
+        return jsonify({'user': user.to_dict()})
+    except Exception as e:
+        logger.error(f"Get profile error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/companies', methods=['GET'])
@@ -469,647 +382,628 @@ def get_companies():
         companies = Company.query.all()
         return jsonify({'companies': [company.to_dict() for company in companies]})
     except Exception as e:
-        return jsonify({'error': 'Error al cargar empresas'}), 500
+        logger.error(f"Get companies error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/investments', methods=['GET'])
 def get_investments():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    investments = UserInvestment.query.filter_by(user_id=user.id, is_active=True).all()
-    return jsonify({'investments': [inv.to_dict() for inv in investments]})
+        investments = UserInvestment.query.filter_by(user_id=user.id, is_active=True).all()
+        return jsonify({'investments': [inv.to_dict() for inv in investments]})
+    except Exception as e:
+        logger.error(f"Get investments error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/buy', methods=['POST'])
 def buy_stocks():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    data = request.get_json()
-    company_id = data.get('company_id')
-    shares = data.get('shares', 1)
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if shares <= 0:
-        return jsonify({'error': 'Las acciones deben ser un número positivo'}), 400
+        company_id = data.get('company_id')
+        shares = data.get('shares', 1)
 
-    company = db.session.get(Company, company_id)
-    if not company:
-        return jsonify({'error': 'Compañía no encontrada'}), 404
+        if shares <= 0:
+            return jsonify({'error': 'Las acciones deben ser un número positivo'}), 400
 
-    price_variation = random.uniform(0.95, 1.05)
-    current_price = company.base_price * price_variation
-    total_cost = current_price * shares
+        company = db.session.get(Company, company_id)
+        if not company:
+            return jsonify({'error': 'Compañía no encontrada'}), 404
 
-    if user.balance < total_cost:
-        return jsonify({'error': 'Saldo insuficiente'}), 400
+        price_variation = random.uniform(0.95, 1.05)
+        current_price = company.base_price * price_variation
+        total_cost = current_price * shares
 
-    existing_investment = UserInvestment.query.filter_by(
-        user_id=user.id,
-        company_id=company_id,
-        is_active=True
-    ).first()
+        if user.balance < total_cost:
+            return jsonify({'error': 'Saldo insuficiente'}), 400
 
-    if existing_investment:
-        total_shares = existing_investment.shares + shares
-        total_invested = (existing_investment.purchase_price * existing_investment.shares) + total_cost
-        new_purchase_price = total_invested / total_shares
-        existing_investment.shares = total_shares
-        existing_investment.purchase_price = new_purchase_price
-        existing_investment.current_price = new_purchase_price
-    else:
-        investment = UserInvestment(
+        existing_investment = UserInvestment.query.filter_by(
             user_id=user.id,
             company_id=company_id,
-            shares=shares,
-            purchase_price=current_price,
-            current_price=current_price
-        )
-        db.session.add(investment)
+            is_active=True
+        ).first()
 
-    user.balance -= total_cost
-    user.total_invested += total_cost
-    user.investments_count += 1
-    db.session.commit()
+        if existing_investment:
+            total_shares = existing_investment.shares + shares
+            total_invested = (existing_investment.purchase_price * existing_investment.shares) + total_cost
+            new_purchase_price = total_invested / total_shares
+            existing_investment.shares = total_shares
+            existing_investment.purchase_price = new_purchase_price
+            existing_investment.current_price = new_purchase_price
+        else:
+            investment = UserInvestment(
+                user_id=user.id,
+                company_id=company_id,
+                shares=shares,
+                purchase_price=current_price,
+                current_price=current_price
+            )
+            db.session.add(investment)
 
-    # Send growth email in background
-    import threading
-    def send_growth_notification():
-        import time
-        time.sleep(30)
-        growth_percentage = random.uniform(120, 250)
-        with app.app_context():
-            send_stock_growth_email(user, company, growth_percentage)
+        user.balance -= total_cost
+        user.total_invested += total_cost
+        user.investments_count += 1
+        db.session.commit()
 
-    thread = threading.Thread(target=send_growth_notification)
-    thread.daemon = True
-    thread.start()
-
-    return jsonify({
-        'message': '¡Acciones compradas exitosamente!',
-        'balance': user.balance,
-        'company': company.to_dict(),
-        'shares': shares,
-        'price': current_price,
-        'total_cost': total_cost
-    })
+        return jsonify({
+            'message': '¡Acciones compradas exitosamente!',
+            'balance': user.balance,
+            'company': company.to_dict(),
+            'shares': shares,
+            'price': current_price,
+            'total_cost': total_cost
+        })
+    except Exception as e:
+        logger.error(f"Buy stocks error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/sell', methods=['POST'])
 def sell_stocks():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    data = request.get_json()
-    investment_id = data.get('investment_id')
-    shares = data.get('shares', 1)
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if shares <= 0:
-        return jsonify({'error': 'Las acciones deben ser un número positivo'}), 400
+        investment_id = data.get('investment_id')
+        shares = data.get('shares', 1)
 
-    investment = db.session.get(UserInvestment, investment_id)
-    if not investment or investment.user_id != user.id or not investment.is_active:
-        return jsonify({'error': 'Inversión no encontrada'}), 404
+        if shares <= 0:
+            return jsonify({'error': 'Las acciones deben ser un número positivo'}), 400
 
-    if investment.shares < shares:
-        return jsonify({'error': 'No tienes suficientes acciones'}), 400
+        investment = db.session.get(UserInvestment, investment_id)
+        if not investment or investment.user_id != user.id or not investment.is_active:
+            return jsonify({'error': 'Inversión no encontrada'}), 404
 
-    investment_data = investment.to_dict()
-    current_price = investment_data['current_price']
-    total_revenue = current_price * shares
-    profit = investment_data['profit'] * (shares / investment.shares)
+        if investment.shares < shares:
+            return jsonify({'error': 'No tienes suficientes acciones'}), 400
 
-    user.balance += total_revenue
-    user.total_withdrawn += total_revenue
-    user.total_profit += profit
+        investment_data = investment.to_dict()
+        current_price = investment_data['current_price']
+        total_revenue = current_price * shares
+        profit = investment_data['profit'] * (shares / investment.shares)
 
-    if investment.shares == shares:
-        investment.is_active = False
-        user.successful_investments += 1
-    else:
-        investment.shares -= shares
+        user.balance += total_revenue
+        user.total_withdrawn += total_revenue
+        user.total_profit += profit
 
-    db.session.commit()
+        if investment.shares == shares:
+            investment.is_active = False
+            user.successful_investments += 1
+        else:
+            investment.shares -= shares
 
-    return jsonify({
-        'message': '¡Acciones vendidas exitosamente!',
-        'balance': user.balance,
-        'company': investment.company.to_dict(),
-        'shares': shares,
-        'price': current_price,
-        'total_revenue': total_revenue,
-        'profit': profit
-    })
+        db.session.commit()
+
+        return jsonify({
+            'message': '¡Acciones vendidas exitosamente!',
+            'balance': user.balance,
+            'company': investment.company.to_dict(),
+            'shares': shares,
+            'price': current_price,
+            'total_revenue': total_revenue,
+            'profit': profit
+        })
+    except Exception as e:
+        logger.error(f"Sell stocks error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/admin/update_balance', methods=['POST'])
 def admin_update_balance():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    data = request.get_json()
-    nickname = data.get('nickname', '').strip()
-    amount = float(data.get('amount', 0))
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if not nickname:
-        return jsonify({'error': 'El nombre de usuario es requerido'}), 400
+        nickname = data.get('nickname', '').strip()
+        amount = float(data.get('amount', 0))
 
-    user = User.query.filter_by(nickname=nickname).first()
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        if not nickname:
+            return jsonify({'error': 'El nombre de usuario es requerido'}), 400
 
-    user.balance += amount
-    db.session.commit()
+        user = User.query.filter_by(nickname=nickname).first()
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    return jsonify({
-        'message': 'Balance actualizado correctamente',
-        'nickname': user.nickname,
-        'new_balance': user.balance
-    })
+        user.balance += amount
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Balance actualizado correctamente',
+            'nickname': user.nickname,
+            'new_balance': user.balance
+        })
+    except Exception as e:
+        logger.error(f"Update balance error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/admin/assign_admin', methods=['POST'])
 def admin_assign_admin():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_owner:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_owner:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    data = request.get_json()
-    nickname = data.get('nickname', '').strip()
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if not nickname:
-        return jsonify({'error': 'El nombre de usuario es requerido'}), 400
+        nickname = data.get('nickname', '').strip()
 
-    user = User.query.filter_by(nickname=nickname).first()
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        if not nickname:
+            return jsonify({'error': 'El nombre de usuario es requerido'}), 400
 
-    if user.is_admin:
-        return jsonify({'error': 'El usuario ya es administrador'}), 400
+        user = User.query.filter_by(nickname=nickname).first()
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    user.is_admin = True
-    db.session.commit()
+        if user.is_admin:
+            return jsonify({'error': 'El usuario ya es administrador'}), 400
 
-    return jsonify({
-        'message': f'{nickname} ha sido asignado como administrador exitosamente'
-    })
+        user.is_admin = True
+        db.session.commit()
+
+        return jsonify({
+            'message': f'{nickname} ha sido asignado como administrador exitosamente'
+        })
+    except Exception as e:
+        logger.error(f"Assign admin error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/admin/remove_admin', methods=['POST'])
 def admin_remove_admin():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_owner:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_owner:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    data = request.get_json()
-    nickname = data.get('nickname', '').strip()
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if not nickname:
-        return jsonify({'error': 'El nombre de usuario es requerido'}), 400
+        nickname = data.get('nickname', '').strip()
 
-    user = User.query.filter_by(nickname=nickname).first()
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        if not nickname:
+            return jsonify({'error': 'El nombre de usuario es requerido'}), 400
 
-    if not user.is_admin:
-        return jsonify({'error': 'El usuario no es administrador'}), 400
+        user = User.query.filter_by(nickname=nickname).first()
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    if user.is_owner:
-        return jsonify({'error': 'No se pueden remover los derechos de owner'}), 400
+        if not user.is_admin:
+            return jsonify({'error': 'El usuario no es administrador'}), 400
 
-    user.is_admin = False
-    db.session.commit()
+        if user.is_owner:
+            return jsonify({'error': 'No se pueden remover los derechos de owner'}), 400
 
-    return jsonify({
-        'message': f'{nickname} ha sido removido de administradores exitosamente'
-    })
+        user.is_admin = False
+        db.session.commit()
 
-
-@app.route('/admin/user_info/<int:user_id>', methods=['GET'])
-def admin_get_user_info(user_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
-
-    user = db.session.get(User, user_id)
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    return jsonify({'user': user.to_dict()})
-
-
-@app.route('/admin/stats', methods=['GET'])
-def admin_get_stats():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
-
-    total_users = User.query.count()
-    total_balance = db.session.query(db.func.sum(User.balance)).scalar() or 0
-    total_invested = db.session.query(db.func.sum(User.total_invested)).scalar() or 0
-    total_profit = db.session.query(db.func.sum(User.total_profit)).scalar() or 0
-
-    return jsonify({
-        'total_users': total_users,
-        'total_balance': total_balance,
-        'total_invested': total_invested,
-        'total_profit': total_profit
-    })
+        return jsonify({
+            'message': f'{nickname} ha sido removido de administradores exitosamente'
+        })
+    except Exception as e:
+        logger.error(f"Remove admin error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/admin/send_bulk_email', methods=['POST'])
 def admin_send_bulk_email():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    admin = db.session.get(User, session['user_id'])
-    if not admin or not admin.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    data = request.get_json()
-    subject = data.get('subject', '').strip()
-    message = data.get('message', '').strip()
-    send_to_all = data.get('send_to_all', False)
-    specific_emails = data.get('specific_emails', '').strip()
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if not subject or not message:
-        return jsonify({'error': 'El asunto y el mensaje son obligatorios'}), 400
+        subject = data.get('subject', '').strip()
+        message = data.get('message', '').strip()
+        send_to_all = data.get('send_to_all', False)
+        specific_emails = data.get('specific_emails', '').strip()
 
-    recipients = []
-    if send_to_all:
-        users = User.query.all()
-        recipients = [user.email for user in users]
-    elif specific_emails:
-        email_list = [email.strip() for email in specific_emails.split(',')]
-        for email in email_list:
-            user = User.query.filter_by(email=email).first()
-            if user:
-                recipients.append(email)
-    else:
-        return jsonify({'error': 'Debes seleccionar destinatarios'}), 400
+        if not subject or not message:
+            return jsonify({'error': 'El asunto y el mensaje son obligatorios'}), 400
 
-    if not recipients:
-        return jsonify({'error': 'No se encontraron destinatarios válidos'}), 400
+        recipients = []
+        if send_to_all:
+            users = User.query.all()
+            recipients = [user.email for user in users]
+        elif specific_emails:
+            email_list = [email.strip() for email in specific_emails.split(',')]
+            for email in email_list:
+                user = User.query.filter_by(email=email).first()
+                if user:
+                    recipients.append(email)
+        else:
+            return jsonify({'error': 'Debes seleccionar destinatarios'}), 400
 
-    success_count = 0
-    error_count = 0
+        if not recipients:
+            return jsonify({'error': 'No se encontraron destinatarios válidos'}), 400
 
-    for email in recipients:
-        try:
-            msg = Message(
-                subject=subject,
-                sender=app.config['MAIL_DEFAULT_SENDER'],
-                recipients=[email]
-            )
-            msg.body = f"{subject}\n\n{message}\n\nClean.Invest"
-            mail.send(msg)
-            success_count += 1
-        except Exception as e:
-            error_count += 1
+        success_count = 0
+        error_count = 0
 
-    return jsonify({
-        'message': f'Email enviado exitosamente a {success_count} usuarios',
-        'success_count': success_count,
-        'error_count': error_count,
-        'total_recipients': len(recipients)
-    })
+        for email in recipients:
+            try:
+                msg = Message(
+                    subject=subject,
+                    sender=app.config['MAIL_DEFAULT_SENDER'],
+                    recipients=[email]
+                )
+                msg.body = f"{subject}\n\n{message}\n\nClean.Invest"
+                mail.send(msg)
+                success_count += 1
+            except Exception as e:
+                logger.error(f"Email error to {email}: {str(e)}")
+                error_count += 1
+
+        return jsonify({
+            'message': f'Email enviado exitosamente a {success_count} usuarios',
+            'success_count': success_count,
+            'error_count': error_count,
+            'total_recipients': len(recipients)
+        })
+    except Exception as e:
+        logger.error(f"Bulk email error: {str(e)}")
+        return handle_db_error(e)
 
 
 # Support chat routes
 @app.route('/support/chat/create', methods=['POST'])
 def create_support_chat():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    existing_chat = SupportChat.query.filter_by(
-        user_id=user.id,
-        status='active'
-    ).first()
+        existing_chat = SupportChat.query.filter_by(
+            user_id=user.id,
+            status='active'
+        ).first()
 
-    if existing_chat:
-        return jsonify({'chat': existing_chat.to_dict()})
+        if existing_chat:
+            return jsonify({'chat': existing_chat.to_dict()})
 
-    pending_chat = SupportChat.query.filter_by(
-        user_id=user.id,
-        status='pending'
-    ).first()
+        pending_chat = SupportChat.query.filter_by(
+            user_id=user.id,
+            status='pending'
+        ).first()
 
-    if pending_chat:
-        return jsonify({'chat': pending_chat.to_dict()})
+        if pending_chat:
+            return jsonify({'chat': pending_chat.to_dict()})
 
-    chat = SupportChat(user_id=user.id)
-    db.session.add(chat)
-    db.session.commit()
+        chat = SupportChat(user_id=user.id)
+        db.session.add(chat)
+        db.session.commit()
 
-    system_msg = ChatMessage(
-        chat_id=chat.id,
-        sender_id=user.id,
-        message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
-        is_system=True
-    )
-    db.session.add(system_msg)
-    db.session.commit()
+        system_msg = ChatMessage(
+            chat_id=chat.id,
+            sender_id=user.id,
+            message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
+            is_system=True
+        )
+        db.session.add(system_msg)
+        db.session.commit()
 
-    return jsonify({'chat': chat.to_dict()})
+        return jsonify({'chat': chat.to_dict()})
+    except Exception as e:
+        logger.error(f"Create chat error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chat/<int:chat_id>/message', methods=['POST'])
 def send_message(chat_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    chat = db.session.get(SupportChat, chat_id)
-    if not chat:
-        return jsonify({'error': 'Chat no encontrado'}), 404
+        chat = db.session.get(SupportChat, chat_id)
+        if not chat:
+            return jsonify({'error': 'Chat no encontrado'}), 404
 
-    if chat.user_id != user.id and (not user.is_admin or chat.admin_id != user.id):
-        return jsonify({'error': 'Acceso denegado'}), 403
+        if chat.user_id != user.id and (not user.is_admin or chat.admin_id != user.id):
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    if chat.status == 'closed' and chat.user_id == user.id:
-        new_chat = SupportChat(user_id=user.id)
-        db.session.add(new_chat)
-        db.session.commit()
+        if chat.status == 'closed' and chat.user_id == user.id:
+            new_chat = SupportChat(user_id=user.id)
+            db.session.add(new_chat)
+            db.session.commit()
 
-        system_msg = ChatMessage(
-            chat_id=new_chat.id,
-            sender_id=user.id,
-            message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
-            is_system=True
-        )
-        db.session.add(system_msg)
-        db.session.commit()
+            system_msg = ChatMessage(
+                chat_id=new_chat.id,
+                sender_id=user.id,
+                message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
+                is_system=True
+            )
+            db.session.add(system_msg)
+            db.session.commit()
 
-        return jsonify({'chat': new_chat.to_dict(), 'message': 'Nuevo chat creado'})
+            return jsonify({'chat': new_chat.to_dict(), 'message': 'Nuevo chat creado'})
 
-    message_text = None
-    attachment_url = None
+        message_text = None
+        attachment_url = None
 
-    if 'attachment' in request.files and request.files['attachment'].filename:
-        file = request.files['attachment']
-        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx'}
-        if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
-            file_ext = file.filename.rsplit('.', 1)[1].lower()
-            filename = secure_filename(f"chat_{chat_id}_{uuid.uuid4().hex}.{file_ext}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            attachment_url = filename
-            message_text = request.form.get('message', '').strip()
+        if 'attachment' in request.files and request.files['attachment'].filename:
+            file = request.files['attachment']
+            allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx'}
+            if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                file_ext = file.filename.rsplit('.', 1)[1].lower()
+                filename = secure_filename(f"chat_{chat_id}_{uuid.uuid4().hex}.{file_ext}")
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                attachment_url = filename
+                message_text = request.form.get('message', '').strip()
+            else:
+                return jsonify({'error': 'Tipo de archivo no válido'}), 400
         else:
-            return jsonify({'error': 'Tipo de archivo no válido'}), 400
-    else:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No se proporcionaron datos'}), 400
-        message_text = data.get('message', '').strip()
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No se proporcionaron datos'}), 400
+            message_text = data.get('message', '').strip()
 
-    if not message_text:
-        return jsonify({'error': 'El texto del mensaje es requerido'}), 400
+        if not message_text:
+            return jsonify({'error': 'El texto del mensaje es requerido'}), 400
 
-    msg = ChatMessage(
-        chat_id=chat_id,
-        sender_id=user.id,
-        message=message_text,
-        attachment_url=attachment_url
-    )
-    db.session.add(msg)
-
-    if chat.status == 'pending' and chat.user_id == user.id and not chat.messages:
-        system_msg = ChatMessage(
+        msg = ChatMessage(
             chat_id=chat_id,
             sender_id=user.id,
-            message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
-            is_system=True
+            message=message_text,
+            attachment_url=attachment_url
         )
-        db.session.add(system_msg)
+        db.session.add(msg)
 
-    db.session.commit()
-    return jsonify({'message': msg.to_dict()})
+        if chat.status == 'pending' and chat.user_id == user.id and not chat.messages:
+            system_msg = ChatMessage(
+                chat_id=chat_id,
+                sender_id=user.id,
+                message="Tu solicitud ha sido registrada, espera a que un administrador se conecte al chat",
+                is_system=True
+            )
+            db.session.add(system_msg)
+
+        db.session.commit()
+        return jsonify({'message': msg.to_dict()})
+    except Exception as e:
+        logger.error(f"Send message error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chat/<int:chat_id>/messages', methods=['GET'])
 def get_chat_messages(chat_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    chat = db.session.get(SupportChat, chat_id)
-    if not chat:
-        return jsonify({'error': 'Chat no encontrado'}), 404
+        chat = db.session.get(SupportChat, chat_id)
+        if not chat:
+            return jsonify({'error': 'Chat no encontrado'}), 404
 
-    if chat.user_id != user.id and (not user.is_admin or chat.admin_id != user.id):
-        return jsonify({'error': 'Acceso denegado'}), 403
+        if chat.user_id != user.id and (not user.is_admin or chat.admin_id != user.id):
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    messages = ChatMessage.query.filter_by(chat_id=chat_id).order_by(ChatMessage.created_at).all()
+        messages = ChatMessage.query.filter_by(chat_id=chat_id).order_by(ChatMessage.created_at).all()
 
-    if user.is_admin:
-        for message in messages:
-            if not message.is_system and message.sender_id != user.id:
-                message.is_read = True
+        if user.is_admin:
+            for message in messages:
+                if not message.is_system and message.sender_id != user.id:
+                    message.is_read = True
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({'messages': [msg.to_dict() for msg in messages]})
+        return jsonify({'messages': [msg.to_dict() for msg in messages]})
+    except Exception as e:
+        logger.error(f"Get messages error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chats/pending', methods=['GET'])
 def get_pending_chats():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user or not user.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        user = db.session.get(User, session['user_id'])
+        if not user or not user.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    chats = SupportChat.query.filter_by(status='pending').order_by(SupportChat.created_at).all()
-    return jsonify({'chats': [chat.to_dict() for chat in chats]})
+        chats = SupportChat.query.filter_by(status='pending').order_by(SupportChat.created_at).all()
+        return jsonify({'chats': [chat.to_dict() for chat in chats]})
+    except Exception as e:
+        logger.error(f"Get pending chats error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chats/active', methods=['GET'])
 def get_active_chats():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    if user.is_admin:
-        chats = SupportChat.query.filter_by(
-            admin_id=user.id,
-            status='active'
-        ).order_by(SupportChat.admin_joined_at).all()
-    else:
-        chats = SupportChat.query.filter_by(
-            user_id=user.id,
-            status='active'
-        ).order_by(SupportChat.admin_joined_at).all()
+        if user.is_admin:
+            chats = SupportChat.query.filter_by(
+                admin_id=user.id,
+                status='active'
+            ).order_by(SupportChat.admin_joined_at).all()
+        else:
+            chats = SupportChat.query.filter_by(
+                user_id=user.id,
+                status='active'
+            ).order_by(SupportChat.admin_joined_at).all()
 
-    return jsonify({'chats': [chat.to_dict() for chat in chats]})
-
-
-@app.route('/support/chats/closed', methods=['GET'])
-def get_closed_chats():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    user = db.session.get(User, session['user_id'])
-    if not user or not user.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
-
-    chats = SupportChat.query.filter_by(status='closed').order_by(SupportChat.closed_at.desc()).all()
-    return jsonify({'chats': [chat.to_dict() for chat in chats]})
+        return jsonify({'chats': [chat.to_dict() for chat in chats]})
+    except Exception as e:
+        logger.error(f"Get active chats error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chat/<int:chat_id>/join', methods=['POST'])
 def join_chat(chat_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user or not user.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        user = db.session.get(User, session['user_id'])
+        if not user or not user.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    chat = db.session.query(SupportChat).filter_by(id=chat_id, status='pending').with_for_update().first()
-    if not chat:
-        return jsonify({'error': 'El chat no está disponible'}), 400
+        chat = db.session.query(SupportChat).filter_by(id=chat_id, status='pending').with_for_update().first()
+        if not chat:
+            return jsonify({'error': 'El chat no está disponible'}), 400
 
-    chat.admin_id = user.id
-    chat.status = 'active'
-    chat.admin_joined_at = datetime.now(timezone.utc)
+        chat.admin_id = user.id
+        chat.status = 'active'
+        chat.admin_joined_at = datetime.now(timezone.utc)
 
-    user_msg = ChatMessage(
-        chat_id=chat_id,
-        sender_id=chat.user_id,
-        message=f"Un administrador ({user.nickname}) se ha conectado al chat",
-        is_system=True
-    )
-    db.session.add(user_msg)
+        user_msg = ChatMessage(
+            chat_id=chat_id,
+            sender_id=chat.user_id,
+            message=f"Un administrador ({user.nickname}) se ha conectado al chat",
+            is_system=True
+        )
+        db.session.add(user_msg)
 
-    admin_msg = ChatMessage(
-        chat_id=chat_id,
-        sender_id=user.id,
-        message="Te has conectado al chat",
-        is_system=True
-    )
-    db.session.add(admin_msg)
+        admin_msg = ChatMessage(
+            chat_id=chat_id,
+            sender_id=user.id,
+            message="Te has conectado al chat",
+            is_system=True
+        )
+        db.session.add(admin_msg)
 
-    db.session.commit()
-    return jsonify({'chat': chat.to_dict()})
-
-
-@app.route('/support/chat/<int:chat_id>/close', methods=['POST'])
-def close_chat(chat_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
-
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    chat = db.session.get(SupportChat, chat_id)
-    if not chat:
-        return jsonify({'error': 'Chat no encontrado'}), 404
-
-    if not user.is_admin or chat.admin_id != user.id:
-        return jsonify({'error': 'Acceso denegado'}), 403
-
-    chat.status = 'closed'
-    chat.closed_at = datetime.now(timezone.utc)
-
-    admin_id = chat.admin_id
-    chat.admin_id = None
-
-    msg = ChatMessage(
-        chat_id=chat_id,
-        sender_id=admin_id,
-        message="El chat ha sido cerrado. Si necesitas más ayuda, envía un nuevo mensaje.",
-        is_system=True
-    )
-    db.session.add(msg)
-
-    db.session.commit()
-    return jsonify({'chat': chat.to_dict()})
+        db.session.commit()
+        return jsonify({'chat': chat.to_dict()})
+    except Exception as e:
+        logger.error(f"Join chat error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/support/chat/<int:chat_id>/add_balance', methods=['POST'])
 def add_balance_to_user(chat_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user or not user.is_admin:
-        return jsonify({'error': 'Acceso denegado'}), 403
+        user = db.session.get(User, session['user_id'])
+        if not user or not user.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
 
-    chat = db.session.get(SupportChat, chat_id)
-    if not chat:
-        return jsonify({'error': 'Chat no encontrado'}), 404
+        chat = db.session.get(SupportChat, chat_id)
+        if not chat:
+            return jsonify({'error': 'Chat no encontrado'}), 404
 
-    if chat.admin_id != user.id or chat.status != 'active':
-        return jsonify({'error': 'No puedes modificar el balance en este chat'}), 400
+        if chat.admin_id != user.id or chat.status != 'active':
+            return jsonify({'error': 'No puedes modificar el balance en este chat'}), 400
 
-    data = request.get_json()
-    amount = float(data.get('amount', 0))
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if amount <= 0:
-        return jsonify({'error': 'El monto debe ser positivo'}), 400
+        amount = float(data.get('amount', 0))
 
-    chat_user = db.session.get(User, chat.user_id)
-    chat_user.balance += amount
+        if amount <= 0:
+            return jsonify({'error': 'El monto debe ser positivo'}), 400
 
-    msg = ChatMessage(
-        chat_id=chat_id,
-        sender_id=user.id,
-        message=f"El administrador ha añadido ${amount:.2f} a tu balance. Nuevo balance: ${chat_user.balance:.2f}",
-        is_system=True
-    )
-    db.session.add(msg)
+        chat_user = db.session.get(User, chat.user_id)
+        chat_user.balance += amount
 
-    db.session.commit()
+        msg = ChatMessage(
+            chat_id=chat_id,
+            sender_id=user.id,
+            message=f"El administrador ha añadido ${amount:.2f} a tu balance. Nuevo balance: ${chat_user.balance:.2f}",
+            is_system=True
+        )
+        db.session.add(msg)
 
-    return jsonify({
-        'message': 'Balance añadido exitosamente',
-        'new_balance': chat_user.balance,
-        'amount': amount
-    })
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Balance añadido exitosamente',
+            'new_balance': chat_user.balance,
+            'amount': amount
+        })
+    except Exception as e:
+        logger.error(f"Add balance error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/uploads/<filename>')
@@ -1120,96 +1014,120 @@ def uploaded_file(filename):
 
 @app.route('/support/unread_count', methods=['GET'])
 def get_unread_count():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    chat = SupportChat.query.filter_by(
-        user_id=user.id,
-        status='active'
-    ).first()
+        chat = SupportChat.query.filter_by(
+            user_id=user.id,
+            status='active'
+        ).first()
 
-    if not chat:
-        return jsonify({'unread_count': 0})
+        if not chat:
+            return jsonify({'unread_count': 0})
 
-    unread_count = ChatMessage.query.filter(
-        ChatMessage.chat_id == chat.id,
-        ChatMessage.is_read == False,
-        ChatMessage.is_system == False,
-        ChatMessage.sender_id != user.id
-    ).count()
+        unread_count = ChatMessage.query.filter(
+            ChatMessage.chat_id == chat.id,
+            ChatMessage.is_read == False,
+            ChatMessage.is_system == False,
+            ChatMessage.sender_id != user.id
+        ).count()
 
-    return jsonify({'unread_count': unread_count})
-
-
-@app.route('/switch_account', methods=['POST'])
-def switch_account():
-    data = request.get_json()
-    nickname = data.get('nickname', '').strip()
-    password = data.get('password', '')
-
-    if not nickname or not password:
-        return jsonify({'error': 'El nombre de usuario y la contraseña son obligatorios'}), 400
-
-    user = User.query.filter_by(nickname=nickname).first()
-    if user and user.check_password(password):
-        user.last_login = datetime.now(timezone.utc)
-        db.session.commit()
-        session['user_id'] = user.id
-        session.permanent = True
-        return jsonify({'user': user.to_dict()})
-    else:
-        return jsonify({'error': 'Credenciales inválidas'}), 401
+        return jsonify({'unread_count': unread_count})
+    except Exception as e:
+        logger.error(f"Unread count error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/set_avatar', methods=['POST'])
 def set_avatar():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    data = request.get_json()
-    avatar_url = data.get('avatar_url')
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if not avatar_url:
-        return jsonify({'error': 'La URL del avatar es requerida'}), 400
+        avatar_url = data.get('avatar_url')
 
-    user.avatar_url = avatar_url
-    db.session.commit()
+        if not avatar_url:
+            return jsonify({'error': 'La URL del avatar es requerida'}), 400
 
-    return jsonify({'message': 'Avatar actualizado correctamente', 'avatar_url': user.avatar_url})
+        user.avatar_url = avatar_url
+        db.session.commit()
+
+        return jsonify({'message': 'Avatar actualizado correctamente', 'avatar_url': user.avatar_url})
+    except Exception as e:
+        logger.error(f"Set avatar error: {str(e)}")
+        return handle_db_error(e)
 
 
 @app.route('/profile', methods=['PUT'])
 def update_profile():
-    if 'user_id' not in session:
-        return jsonify({'error': 'No has iniciado sesión'}), 401
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
 
-    user = db.session.get(User, session['user_id'])
-    if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    data = request.get_json()
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
 
-    if 'name' in data:
-        user.name = data['name'].strip()
-    if 'full_name' in data:
-        user.full_name = data['full_name'].strip()
-    if 'phone' in data:
-        phone = data['phone'].strip()
-        if phone and not re.match(r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$', phone):
-            return jsonify({'error': 'Formato de teléfono inválido'}), 400
-        user.phone = phone
+        if 'name' in data:
+            user.name = data['name'].strip()
+        if 'full_name' in data:
+            user.full_name = data['full_name'].strip()
+        if 'phone' in data:
+            phone = data['phone'].strip()
+            if phone and not re.match(r'^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$', phone):
+                return jsonify({'error': 'Formato de teléfono inválido'}), 400
+            user.phone = phone
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({'message': 'Perfil actualizado correctamente', 'user': user.to_dict()})
+        return jsonify({'message': 'Perfil actualizado correctamente', 'user': user.to_dict()})
+    except Exception as e:
+        logger.error(f"Update profile error: {str(e)}")
+        return handle_db_error(e)
+
+
+@app.route('/switch_account', methods=['POST'])
+def switch_account():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
+
+        nickname = data.get('nickname', '').strip()
+        password = data.get('password', '')
+
+        if not nickname or not password:
+            return jsonify({'error': 'El nombre de usuario y la contraseña son obligatorios'}), 400
+
+        user = User.query.filter_by(nickname=nickname).first()
+        if user and user.check_password(password):
+            user.last_login = datetime.now(timezone.utc)
+            db.session.commit()
+            session['user_id'] = user.id
+            session.permanent = True
+            return jsonify({'user': user.to_dict()})
+        else:
+            return jsonify({'error': 'Credenciales inválidas'}), 401
+    except Exception as e:
+        logger.error(f"Switch account error: {str(e)}")
+        return handle_db_error(e)
 
 
 # Error handlers
@@ -1222,6 +1140,11 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return jsonify({'error': 'Internal server error'}), 500
+
+
+@app.errorhandler(400)
+def bad_request_error(error):
+    return jsonify({'error': 'Bad request'}), 400
 
 
 # Run app
