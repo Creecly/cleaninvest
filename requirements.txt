@@ -3,10 +3,9 @@ Flask==2.3.3
 Werkzeug==2.3.7
 gunicorn==21.2.0
 
-# Database (оптимизированные версии)
+# Database
 Flask-SQLAlchemy==3.0.5
 psycopg2-binary==2.9.7
-SQLAlchemy==2.0.21
 
 # Email
 Flask-Mail==0.9.1
@@ -14,17 +13,9 @@ Flask-Mail==0.9.1
 # Environment & Security
 python-dotenv==1.0.0
 email-validator==2.0.0
-cryptography==41.0.4
 
 # Performance & Caching
 redis==4.6.0
-
-# Compression & Optimization
-Flask-Compress==1.14
-Brotli==1.1.0
-
-# Monitoring & Debugging
-psutil==5.9.6
 
 # Additional utilities
 blinker==1.6.3

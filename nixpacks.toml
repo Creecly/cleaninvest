@@ -5,7 +5,6 @@ nixPkgs = [
     "gcc",
     "pkg-config",
     "libffi",
-    "libpq",
     "openssl"
 ]
 
@@ -17,6 +16,3 @@ cmds = [
 
 [start]
 cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --max-requests 1000 --max-requests-jitter 100 app:app"
-
-[phases.install]
-nixPkgs = ["postgresql", "libpq"]
