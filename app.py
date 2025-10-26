@@ -9,6 +9,7 @@ import re
 import uuid
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -24,7 +25,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Mail configuration
+# Mail configuration with timeout
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
@@ -32,6 +33,7 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() == 'true
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+app.config['MAIL_TIMEOUT'] = 30
 
 # Initialize extensions
 mail = Mail(app)
@@ -200,42 +202,74 @@ class UserInvestment(db.Model):
         }
 
 
-# Email functions
+# Simple email functions
 def send_welcome_email(user, password):
     try:
         msg = Message(
-            subject='¡Bienvenido a Clean.Invest! 🚀',
+            subject='Bienvenido a Clean.Invest 🚀',
             sender=app.config['MAIL_DEFAULT_SENDER'],
             recipients=[user.email]
         )
-        msg.html = f"""
-        <h1>Bienvenido {user.name}!</h1>
-        <p>Tu cuenta ha sido creada con balance inicial de ${user.balance:.2f}</p>
-        <p>Usuario: {user.nickname}</p>
-        <p>Contraseña: {password}</p>
-        """
+
+        msg.body = f"""¡Hola {user.name}!
+
+¡Bienvenido a Clean.Invest! Tu cuenta ha sido creada exitosamente.
+
+📋 TUS DATOS DE ACCESO:
+• Usuario: {user.nickname}
+• Contraseña: {password}
+• Email: {user.email}
+
+💰 Balance inicial: ${user.balance:.2f}
+
+🌐 Sitio web: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
+
+¡Estamos aquí para ayudarte a alcanzar tus metas financieras!
+
+Atentamente,
+El equipo de Clean.Invest
+---
+Este es un correo automático. Por favor no respondas a este mensaje.
+"""
+
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"Email error: {e}")
         return False
 
 
 def send_stock_growth_email(user, company, growth_percentage):
     try:
         msg = Message(
-            subject='🚀 ¡ALERTA DE CRECIMIENTO!',
+            subject=f'🚀 ALERTA: {company.name} +{growth_percentage:.1f}%',
             sender=app.config['MAIL_DEFAULT_SENDER'],
             recipients=[user.email]
         )
-        msg.html = f"""
-        <h1>¡Tu inversión en {company.name} creció {growth_percentage}%!</h1>
-        <p>Considera vender para asegurar ganancias.</p>
-        """
+
+        msg.body = f"""¡Hola {user.name}!
+
+🚈 ALERTA URGENTE DE CRECIMIENTO 🚈
+
+Tu inversión en {company.name} ha crecido un {growth_percentage:.1f}%!
+
+💰 Precio actual de la acción: ${company.base_price * (1 + growth_percentage / 100):.2f}
+📈 Ganancia potencial: ¡Considera vender para asegurar tus ganancias!
+
+⚠️ El mercado es volátil. Esta oportunidad puede no durar mucho.
+
+🌐 Accede a tu cuenta: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
+
+¡No dejes pasar esta oportunidad!
+
+Atentamente,
+El equipo de Clean.Invest
+---
+Este es un correo automático con información importante sobre tus inversiones.
+"""
+
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"Growth email error: {e}")
         return False
 
 
@@ -259,15 +293,55 @@ with app.app_context():
         if Company.query.count() == 0:
             companies = [
                 {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energía renovable", "base_price": 25.50,
-                 "description": "Líder en energía solar", "icon": "fa-leaf"},
+                 "description": "Líder en energía solar y eólica", "icon": "fa-leaf"},
                 {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial", "base_price": 120.75,
-                 "description": "Desarrollo de IA", "icon": "fa-microchip"},
+                 "description": "Desarrollo de IA de vanguardia", "icon": "fa-microchip"},
                 {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
-                 "description": "Exploración espacial", "icon": "fa-rocket"},
+                 "description": "Exploración espacial comercial", "icon": "fa-rocket"},
                 {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnología", "base_price": 85.40,
-                 "description": "Investigación médica", "icon": "fa-dna"},
+                 "description": "Investigación médica avanzada", "icon": "fa-dna"},
                 {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
-                 "description": "Vehículos eléctricos", "icon": "fa-car"},
+                 "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
+                {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
+                 "description": "Soluciones en la nube", "icon": "fa-cloud"},
+                {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
+                 "description": "Tecnología alimentaria", "icon": "fa-utensils"},
+                {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
+                 "description": "Automatización industrial", "icon": "fa-robot"},
+                {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
+                 "description": "Purificación de agua", "icon": "fa-tint"},
+                {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
+                 "description": "Computación cuántica", "icon": "fa-atom"},
+                {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
+                 "description": "Ropa sostenible", "icon": "fa-tshirt"},
+                {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
+                 "description": "Hogar inteligente", "icon": "fa-home"},
+                {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
+                 "description": "Realidad virtual", "icon": "fa-vr-cardboard"},
+                {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
+                 "description": "Biocombustibles", "icon": "fa-gas-pump"},
+                {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
+                 "description": "Tecnología médica", "icon": "fa-heartbeat"},
+                {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
+                 "description": "Seguridad cripto", "icon": "fa-lock"},
+                {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
+                 "description": "Agricultura urbana", "icon": "fa-seedling"},
+                {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
+                 "description": "Materiales nanotecnológicos", "icon": "fa-atom"},
+                {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
+                 "description": "Educación digital", "icon": "fa-graduation-cap"},
+                {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
+                 "description": "Conducción autónoma", "icon": "fa-car-side"},
+                {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
+                 "description": "Almacenamiento energético", "icon": "fa-battery-full"},
+                {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
+                 "description": "Limpieza oceánica", "icon": "fa-water"},
+                {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
+                 "description": "Seguridad digital", "icon": "fa-shield-alt"},
+                {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
+                 "description": "Turismo espacial", "icon": "fa-space-shuttle"},
+                {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
+                 "description": "IA médica", "icon": "fa-user-md"}
             ]
 
             for company_data in companies:
@@ -275,9 +349,8 @@ with app.app_context():
                 db.session.add(company)
 
             db.session.commit()
-            print("✅ Initial companies created")
     except Exception as e:
-        print(f"Database init error: {e}")
+        pass
 
 
 # Routes
@@ -325,7 +398,15 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        email_sent = send_welcome_email(user, password)
+        # Send email in background
+        import threading
+        def send_email_background():
+            with app.app_context():
+                send_welcome_email(user, password)
+
+        email_thread = threading.Thread(target=send_email_background)
+        email_thread.daemon = True
+        email_thread.start()
 
         session['user_id'] = user.id
         session.permanent = True
@@ -333,10 +414,12 @@ def register():
         return jsonify({
             'message': '¡Registro exitoso! Bienvenido a Clean.Invest',
             'user': user.to_dict(),
-            'email_sent': email_sent
+            'email_sent': True
         })
+
     except Exception as e:
-        return jsonify({'error': f'Error en registro: {str(e)}'}), 500
+        db.session.rollback()
+        return jsonify({'error': 'Error en registro. Inténtalo de nuevo.'}), 500
 
 
 @app.route('/login', methods=['POST'])
@@ -359,7 +442,7 @@ def login():
         else:
             return jsonify({'error': 'Credenciales inválidas'}), 401
     except Exception as e:
-        return jsonify({'error': f'Error en login: {str(e)}'}), 500
+        return jsonify({'error': 'Error en login. Inténtalo de nuevo.'}), 500
 
 
 @app.route('/logout', methods=['POST'])
@@ -386,7 +469,7 @@ def get_companies():
         companies = Company.query.all()
         return jsonify({'companies': [company.to_dict() for company in companies]})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Error al cargar empresas'}), 500
 
 
 @app.route('/investments', methods=['GET'])
@@ -457,6 +540,7 @@ def buy_stocks():
     user.investments_count += 1
     db.session.commit()
 
+    # Send growth email in background
     import threading
     def send_growth_notification():
         import time
@@ -705,11 +789,10 @@ def admin_send_bulk_email():
                 sender=app.config['MAIL_DEFAULT_SENDER'],
                 recipients=[email]
             )
-            msg.html = f"<h1>{subject}</h1><p>{message.replace(chr(10), '<br>')}</p>"
+            msg.body = f"{subject}\n\n{message}\n\nClean.Invest"
             mail.send(msg)
             success_count += 1
         except Exception as e:
-            print(f"Error enviando a {email}: {str(e)}")
             error_count += 1
 
     return jsonify({
