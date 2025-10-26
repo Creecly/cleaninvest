@@ -1,0 +1,6989 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clean.Invest - Tu Futuro Financiero</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* {
+font-family: 'Inter', sans-serif;
+}
+
+/* Светлая тема */
+:root {
+--bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+--bg-secondary: rgba(255, 255, 255, 0.95);
+--text-primary: #1f2937;
+--text-secondary: #6b7280;
+--border-color: rgba(255, 255, 255, 0.18);
+--card-bg: rgba(255, 255, 255, 0.1);
+--input-bg: rgba(255, 255, 255, 0.5);
+--shadow-color: rgba(0, 0, 0, 0.1);
+--accent-color: #667eea;
+--success-color: #10b981;
+--error-color: #ef4444;
+--chat-bg: #f3f4f6;
+--chat-user-bg: #667eea;
+--chat-admin-bg: #10b981;
+--chat-system-bg: #fbbf24;
+--owner-red: #ff0000;
+--owner-glow: 0 0 20px rgba(255, 0, 0, 0.8);
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+--bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+--bg-secondary: rgba(30, 41, 59, 0.95);
+--text-primary: #f1f5f9;
+--text-secondary: #94a3b8;
+--border-color: rgba(255, 255, 255, 0.1);
+--card-bg: rgba(0, 0, 0, 0.3);
+--input-bg: rgba(255, 255, 255, 0.05);
+--shadow-color: rgba(0, 0, 0, 0.5);
+--accent-color: #8b5cf6;
+--success-color: #34d399;
+--error-color: #f87171;
+--chat-bg: #374151;
+--chat-user-bg: #8b5cf6;
+--chat-admin-bg: #34d399;
+--chat-system-bg: #f59e0b;
+--owner-red: #ff3333;
+--owner-glow: 0 0 30px rgba(255, 51, 51, 0.9);
+}
+
+body {
+background: var(--bg-primary);
+min-height: 100vh;
+position: relative;
+overflow-x: hidden;
+transition: background 0.5s ease;
+}
+
+/* Анимированный фон */
+.animated-bg {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: 0;
+overflow: hidden;
+}
+
+.gradient-orb {
+position: absolute;
+border-radius: 50%;
+filter: blur(80px);
+opacity: 0.6;
+animation: float-orb 20s infinite ease-in-out;
+}
+
+@keyframes float-orb {
+0%, 100% { transform: translate(0, 0) scale(1); }
+25% { transform: translate(100px, -100px) scale(1.1); }
+50% { transform: translate(-100px, 100px) scale(0.9); }
+75% { transform: translate(50px, 50px) scale(1.05); }
+}
+
+/* Плавающие частицы */
+.particle {
+position: absolute;
+background: white;
+border-radius: 50%;
+opacity: 0.3;
+animation: float-particle 15s infinite linear;
+}
+
+@keyframes float-particle {
+from {
+transform: translateY(100vh) rotate(0deg);
+opacity: 0;
+}
+10% {
+opacity: 0.3;
+}
+90% {
+opacity: 0.3;
+}
+to {
+transform: translateY(-100vh) rotate(360deg);
+opacity: 0;
+}
+}
+
+/* Glass morphism */
+.glass-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+box-shadow: 0 25px 50px -12px var(--shadow-color);
+transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 30px 60px -15px var(--shadow-color);
+}
+
+/* Кастомные инпуты */
+.custom-input {
+position: relative;
+margin-bottom: 2rem;
+}
+
+.custom-input input {
+width: 100%;
+padding: 1.25rem 1rem 0.75rem 3.5rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 1rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.custom-input input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.custom-input label {
+position: absolute;
+left: 3.5rem;
+top: 50%;
+transform: translateY(-50%);
+color: var(--text-secondary);
+font-size: 1rem;
+pointer-events: none;
+transition: all 0.3s ease;
+background: var(--bg-secondary);
+padding: 0 0.5rem;
+}
+
+.custom-input input:focus + label,
+.custom-input input:not(:placeholder-shown) + label {
+top: 0;
+font-size: 0.75rem;
+color: var(--accent-color);
+font-weight: 500;
+}
+
+.custom-input .icon {
+position: absolute;
+left: 1rem;
+top: 50%;
+transform: translateY(-50%);
+color: var(--text-secondary);
+transition: all 0.3s ease;
+font-size: 1.25rem;
+}
+
+.custom-input input:focus ~ .icon {
+color: var(--accent-color);
+}
+
+/* Кастомный чекбокс */
+.custom-checkbox {
+position: relative;
+display: inline-block;
+width: 24px;
+height: 24px;
+margin-right: 0.75rem;
+}
+
+.custom-checkbox input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.checkmark {
+position: absolute;
+top: 0;
+left: 0;
+height: 24px;
+width: 24px;
+background-color: var(--input-bg);
+border: 2px solid var(--border-color);
+border-radius: 6px;
+transition: all 0.3s ease;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+background-color: var(--accent-color);
+opacity: 0.2;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+border-color: var(--accent-color);
+}
+
+.checkmark:after {
+content: "";
+position: absolute;
+display: none;
+left: 7px;
+top: 3px;
+width: 6px;
+height: 12px;
+border: solid white;
+border-width: 0 2px 2px 0;
+transform: rotate(45deg);
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+display: block;
+animation: check-pop 0.3s ease;
+}
+
+@keyframes check-pop {
+0% { transform: rotate(45deg) scale(0); }
+50% { transform: rotate(45deg) scale(1.2); }
+100% { transform: rotate(45deg) scale(1); }
+}
+
+/* Кнопка отправки */
+.submit-btn {
+position: relative;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+padding: 1.25rem 2rem;
+border-radius: 1rem;
+font-weight: 600;
+font-size: 1.1rem;
+border: none;
+cursor: pointer;
+overflow: hidden;
+transition: all 0.3s ease;
+box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.submit-btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:active {
+transform: translateY(-1px);
+}
+
+.submit-btn .ripple {
+position: absolute;
+border-radius: 50%;
+background: rgba(255, 255, 255, 0.3);
+transform: scale(0);
+animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+to {
+transform: scale(4);
+opacity: 0;
+}
+}
+
+/* Индикатор прогресса */
+.progress-bar {
+position: absolute;
+bottom: 0;
+left: 0;
+height: 3px;
+background: linear-gradient(90deg, var(--accent-color), #764ba2);
+border-radius: 3px;
+transition: width 0.3s ease;
+}
+
+/* Индикатор силы пароля */
+.password-strength-indicator {
+display: flex;
+gap: 0.25rem;
+margin-top: 0.5rem;
+}
+
+.strength-bar {
+flex: 1;
+height: 4px;
+background: var(--input-bg);
+border-radius: 2px;
+transition: all 0.3s ease;
+}
+
+.strength-bar.active.weak {
+background: var(--error-color);
+}
+
+.strength-bar.active.medium {
+background: #f59e0b;
+}
+
+.strength-bar.active.strong {
+background: var(--success-color);
+}
+
+/* Переключатель темы */
+.theme-toggle {
+position: relative;
+width: 70px;
+height: 36px;
+}
+
+.theme-toggle input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.theme-slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: linear-gradient(135deg, #fbbf24, #f59e0b);
+transition: 0.4s;
+border-radius: 36px;
+box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-slider:before {
+position: absolute;
+content: "☀️";
+height: 28px;
+width: 28px;
+left: 4px;
+bottom: 4px;
+background: white;
+transition: 0.4s;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+}
+
+input:checked + .theme-slider {
+background: linear-gradient(135deg, #4c1d95, #5b21b6);
+}
+
+input:checked + .theme-slider:before {
+transform: translateX(34px);
+content: "🌙";
+}
+
+/* Анимации появления */
+.fade-in-up {
+opacity: 0;
+transform: translateY(30px);
+animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* Улучшенная система уведомлений */
+.notification-container {
+position: fixed;
+top: 20px;
+right: 20px;
+z-index: 1000;
+display: flex;
+flex-direction: column;
+gap: 15px;
+max-width: 400px;
+width: 100%;
+}
+
+.notification {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1rem;
+padding: 0;
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+overflow: hidden;
+transform: translateX(120%);
+opacity: 0;
+transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+position: relative;
+}
+
+.notification.show {
+transform: translateX(0);
+opacity: 1;
+}
+
+.notification-icon-container {
+position: absolute;
+left: 0;
+top: 0;
+bottom: 0;
+width: 70px;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+}
+
+.notification-icon-container::before {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+opacity: 0.15;
+z-index: 0;
+}
+
+.notification.success .notification-icon-container::before {
+background: linear-gradient(135deg, var(--success-color), #059669);
+}
+
+.notification.error .notification-icon-container::before {
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+}
+
+.notification.info .notification-icon-container::before {
+background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.notification.warning .notification-icon-container::before {
+background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.notification-icon {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.2rem;
+color: white;
+position: relative;
+z-index: 1;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.notification.success .notification-icon {
+background: linear-gradient(135deg, var(--success-color), #059669);
+}
+
+.notification.error .notification-icon {
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+}
+
+.notification.info .notification-icon {
+background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.notification.warning .notification-icon {
+background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.notification-content {
+padding: 20px 20px 20px 80px;
+position: relative;
+}
+
+.notification-title {
+font-weight: 700;
+font-size: 1rem;
+margin-bottom: 5px;
+color: var(--text-primary);
+}
+
+.notification-message {
+color: var(--text-secondary);
+font-size: 0.9rem;
+line-height: 1.4;
+}
+
+.notification-close {
+position: absolute;
+top: 15px;
+right: 15px;
+width: 24px;
+height: 24px;
+border-radius: 50%;
+background: rgba(0, 0, 0, 0.05);
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+color: var(--text-secondary);
+transition: all 0.2s ease;
+z-index: 2;
+}
+
+.notification-close:hover {
+background: rgba(0, 0, 0, 0.1);
+color: var(--text-primary);
+transform: rotate(90deg);
+}
+
+.notification-progress {
+position: absolute;
+bottom: 0;
+left: 0;
+height: 3px;
+width: 100%;
+background: rgba(0, 0, 0, 0.05);
+}
+
+.notification-progress-bar {
+height: 100%;
+border-radius: 0 0 0 1rem;
+transition: width 0.1s linear;
+}
+
+.notification.success .notification-progress-bar {
+background: linear-gradient(90deg, var(--success-color), #059669);
+}
+
+.notification.error .notification-progress-bar {
+background: linear-gradient(90deg, var(--error-color), #dc2626);
+}
+
+.notification.info .notification-progress-bar {
+background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.notification.warning .notification-progress-bar {
+background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+/* Разделитель */
+.divider {
+display: flex;
+align-items: center;
+margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+content: '';
+flex: 1;
+height: 1px;
+background: var(--border-color);
+}
+
+.divider span {
+padding: 0 1rem;
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+/* Модальное окно регистрации */
+.modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+.modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 500px;
+width: 90%;
+max-height: 90vh;
+overflow-y: auto;
+animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+from {
+transform: translateY(50px);
+opacity: 0;
+}
+to {
+transform: translateY(0);
+opacity: 1;
+}
+}
+
+.close-modal {
+position: absolute;
+top: 1.5rem;
+right: 1.5rem;
+font-size: 1.5rem;
+cursor: pointer;
+color: var(--text-secondary);
+transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+color: var(--text-primary);
+transform: rotate(90deg);
+}
+
+/* Навигационная панель */
+.nav-bar {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+z-index: 100;
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border-bottom: 1px solid var(--border-color);
+padding: 1rem 0;
+transition: all 0.3s ease;
+}
+
+.nav-container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 0 1rem;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.nav-logo {
+font-size: 1.5rem;
+font-weight: 800;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.nav-menu {
+display: flex;
+gap: 1rem;
+}
+
+.nav-item {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+color: var(--text-secondary);
+transition: all 0.3s ease;
+cursor: pointer;
+}
+
+.nav-item:hover {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+.nav-item.active {
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+}
+
+.nav-user {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+}
+
+.nav-avatar {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-weight: 600;
+overflow: hidden;
+}
+
+.nav-avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+/* Owner badge */
+.owner-badge {
+display: inline-block;
+padding: 0.2rem 0.6rem;
+border-radius: 1rem;
+font-size: 0.7rem;
+font-weight: 600;
+background: var(--owner-red);
+color: white;
+text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+box-shadow: var(--owner-glow);
+animation: ownerPulse 2s infinite;
+margin-left: 0.5rem;
+}
+
+@keyframes ownerPulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.8; }
+}
+
+/* Стили для главного меню */
+.main-content {
+padding-top: 80px;
+min-height: 100vh;
+}
+
+.hero-section {
+padding: 3rem 1rem;
+text-align: center;
+}
+
+.hero-title {
+font-size: 3rem;
+font-weight: 800;
+margin-bottom: 1rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+font-size: 1.25rem;
+color: var(--text-secondary);
+max-width: 800px;
+margin: 0 auto 2rem;
+line-height: 1.6;
+}
+
+.stats-container {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 1.5rem;
+max-width: 1200px;
+margin: 0 auto;
+padding: 0 1rem;
+}
+
+.stat-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 2rem;
+text-align: center;
+transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.stat-value {
+font-size: 2.5rem;
+font-weight: 800;
+margin-bottom: 0.5rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+color: var(--text-secondary);
+font-size: 1rem;
+}
+
+/* Стили для разделов */
+.section {
+padding: 3rem 1rem;
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.section-title {
+font-size: 2rem;
+font-weight: 700;
+margin-bottom: 2rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.balance-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 3rem;
+text-align: center;
+margin-bottom: 2rem;
+}
+
+.balance-amount {
+font-size: 4rem;
+font-weight: 800;
+margin-bottom: 1rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.balance-label {
+color: var(--text-secondary);
+font-size: 1.25rem;
+margin-bottom: 2rem;
+}
+
+.deposit-btn {
+background: linear-gradient(135deg, var(--success-color), #059669);
+color: white;
+padding: 1rem 2rem;
+border-radius: 1rem;
+font-weight: 600;
+font-size: 1.1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.deposit-btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+}
+
+.investments-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+gap: 1.5rem;
+}
+
+.investment-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+transition: all 0.3s ease;
+}
+
+.investment-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.investment-header {
+display: flex;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.investment-icon {
+width: 50px;
+height: 50px;
+border-radius: 1rem;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.5rem;
+margin-right: 1rem;
+}
+
+.investment-name {
+font-weight: 600;
+font-size: 1.25rem;
+color: var(--text-primary);
+}
+
+.investment-category {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.investment-stats {
+display: flex;
+justify-content: space-between;
+margin-top: 1rem;
+}
+
+.investment-stat {
+text-align: center;
+}
+
+.investment-value {
+font-weight: 700;
+font-size: 1.25rem;
+color: var(--text-primary);
+}
+
+.investment-label {
+color: var(--text-secondary);
+font-size: 0.75rem;
+}
+
+.stats-chart {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 2rem;
+margin-bottom: 2rem;
+}
+
+.chart-container {
+height: 300px;
+position: relative;
+margin-top: 1rem;
+}
+
+.chart-bars {
+display: flex;
+align-items: flex-end;
+justify-content: space-between;
+height: 250px;
+gap: 0.5rem;
+}
+
+.chart-bar {
+flex: 1;
+background: linear-gradient(to top, var(--accent-color), #764ba2);
+border-radius: 0.5rem 0.5rem 0 0;
+position: relative;
+transition: all 0.3s ease;
+}
+
+.chart-bar:hover {
+opacity: 0.8;
+}
+
+.chart-label {
+position: absolute;
+bottom: -25px;
+left: 0;
+right: 0;
+text-align: center;
+color: var(--text-secondary);
+font-size: 0.75rem;
+}
+
+.chart-value {
+position: absolute;
+top: -25px;
+left: 0;
+right: 0;
+text-align: center;
+color: var(--text-primary);
+font-weight: 600;
+font-size: 0.875rem;
+}
+
+.stats-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 1.5rem;
+margin-top: 2rem;
+}
+
+.stat-circle {
+position: relative;
+width: 150px;
+height: 150px;
+margin: 0 auto;
+}
+
+.stat-circle-bg {
+width: 100%;
+height: 100%;
+border-radius: 50%;
+background: conic-gradient(
+var(--accent-color) 0% 75%,
+var(--input-bg) 75% 100%
+);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.stat-circle-inner {
+width: 75%;
+height: 75%;
+border-radius: 50%;
+background: var(--bg-secondary);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+
+.stat-circle-value {
+font-size: 1.5rem;
+font-weight: 700;
+color: var(--text-primary);
+}
+
+.stat-circle-label {
+color: var(--text-secondary);
+font-size: 0.75rem;
+}
+
+.stat-info {
+text-align: center;
+margin-top: 1rem;
+}
+
+.stat-info-title {
+font-weight: 600;
+color: var(--text-primary);
+margin-bottom: 0.25rem;
+}
+
+.stat-info-desc {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+/* Главная кнопка */
+.main-home-btn {
+position: fixed;
+bottom: 2rem;
+right: 2rem;
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 1001;
+}
+
+.main-home-btn:hover {
+transform: scale(1.1);
+box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+}
+
+/* Кнопка админ-панели */
+.main-admin-btn {
+position: fixed;
+bottom: 2rem;
+right: 5rem;
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, #ef4444, #dc2626);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 1001;
+}
+
+.main-admin-btn:hover {
+transform: scale(1.1);
+box-shadow: 0 15px 35px rgba(239, 68, 68, 0.5);
+}
+
+/* Кнопка чата поддержки */
+.support-chat-btn {
+position: fixed;
+bottom: 2rem;
+left: 2rem;
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, #10b981, #059669);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 1001;
+}
+
+.support-chat-btn:hover {
+transform: scale(1.1);
+box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5);
+}
+
+.support-chat-btn.has-notification {
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0% {
+box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+70% {
+box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+}
+100% {
+box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+}
+}
+
+/* Непрочитанные сообщения */
+.unread-badge {
+position: absolute;
+top: -5px;
+right: -5px;
+background: #ef4444;
+color: white;
+border-radius: 50%;
+width: 20px;
+height: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.7rem;
+font-weight: 700;
+box-shadow: 0 2px 5px rgba(239, 68, 68, 0.5);
+animation: bounceIn 0.5s;
+}
+
+@keyframes bounceIn {
+0% { transform: scale(0); }
+50% { transform: scale(1.2); }
+100% { transform: scale(1); }
+}
+
+/* Кнопка обращений для админа */
+.admin-tickets-btn {
+position: fixed;
+bottom: 2rem;
+left: 5rem;
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, #f59e0b, #d97706);
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 1001;
+}
+
+.admin-tickets-btn:hover {
+transform: scale(1.1);
+box-shadow: 0 15px 35px rgba(245, 158, 11, 0.5);
+}
+
+.admin-tickets-btn.has-notification {
+animation: pulse 2s infinite;
+}
+
+/* Окно чата поддержки */
+.support-chat-window {
+position: fixed;
+bottom: 100px;
+left: 2rem;
+width: 380px;
+height: 500px;
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1rem;
+box-shadow: 0 25px 50px -12px var(--shadow-color);
+display: none;
+flex-direction: column;
+z-index: 1000;
+transition: all 0.3s ease;
+}
+
+.support-chat-window.show {
+display: flex;
+}
+
+.support-chat-header {
+padding: 1rem;
+border-bottom: 1px solid var(--border-color);
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.support-chat-title {
+font-weight: 600;
+color: var(--text-primary);
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+
+.support-chat-status {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+background: var(--success-color);
+}
+
+.support-chat-close {
+width: 30px;
+height: 30px;
+border-radius: 50%;
+background: rgba(0, 0, 0, 0.05);
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+color: var(--text-secondary);
+transition: all 0.2s ease;
+}
+
+.support-chat-close:hover {
+background: rgba(0, 0, 0, 0.1);
+color: var(--text-primary);
+}
+
+.support-chat-messages {
+flex: 1;
+overflow-y: auto;
+padding: 1rem;
+display: flex;
+flex-direction: column;
+gap: 0.75rem;
+scroll-behavior: smooth;
+}
+
+.chat-message {
+max-width: 80%;
+padding: 0.75rem 1rem;
+border-radius: 1rem;
+word-wrap: break-word;
+}
+
+.chat-message.user {
+background: var(--chat-user-bg);
+color: white;
+align-self: flex-end;
+border-bottom-right-radius: 0.25rem;
+}
+
+.chat-message.admin {
+background: var(--chat-admin-bg);
+color: white;
+align-self: flex-start;
+border-bottom-left-radius: 0.25rem;
+}
+
+.chat-message.system {
+background: var(--chat-system-bg);
+color: var(--text-primary);
+align-self: center;
+font-size: 0.875rem;
+font-style: italic;
+border-radius: 0.5rem;
+}
+
+.chat-message-content {
+margin-bottom: 0.25rem;
+}
+
+.chat-message-time {
+font-size: 0.75rem;
+opacity: 0.7;
+}
+
+.chat-message-attachment {
+margin-top: 0.5rem;
+padding: 0.5rem;
+background: rgba(255, 255, 255, 0.1);
+border-radius: 0.5rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+
+.chat-message-attachment:hover {
+background: rgba(255, 255, 255, 0.2);
+}
+
+.chat-message-attachment img {
+max-width: 200px;
+max-height: 200px;
+border-radius: 0.5rem;
+cursor: pointer;
+transition: transform 0.2s ease;
+}
+
+.chat-message-attachment img:hover {
+transform: scale(1.05);
+}
+
+.support-chat-input {
+padding: 1rem;
+border-top: 1px solid var(--border-color);
+display: flex;
+gap: 0.5rem;
+}
+
+.chat-input-wrapper {
+flex: 1;
+position: relative;
+}
+
+.chat-input {
+width: 100%;
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 2rem;
+font-size: 0.875rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+resize: none;
+max-height: 100px;
+}
+
+.chat-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+}
+
+.chat-attach-btn {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background: var(--input-bg);
+border: none;
+color: var(--text-secondary);
+cursor: pointer;
+transition: all 0.3s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.chat-attach-btn:hover {
+background: var(--bg-secondary);
+color: var(--accent-color);
+}
+
+.chat-send-btn {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+border: none;
+color: white;
+cursor: pointer;
+transition: all 0.3s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.chat-send-btn:hover {
+transform: scale(1.05);
+}
+
+.chat-send-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+transform: none;
+}
+
+/* Контролы админа в чате */
+.admin-chat-controls {
+padding: 1rem;
+border-top: 1px solid var(--border-color);
+display: flex;
+gap: 0.5rem;
+background: var(--bg-secondary);
+}
+
+.admin-chat-btn {
+padding: 0.5rem 1rem;
+border-radius: 0.5rem;
+font-weight: 600;
+font-size: 0.875rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+white-space: nowrap;
+}
+
+.admin-add-balance-btn {
+background: linear-gradient(135deg, var(--success-color), #059669);
+color: white;
+}
+
+.admin-close-btn {
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+}
+
+/* Окно обращений для админа */
+.admin-tickets-window {
+position: fixed;
+bottom: 100px;
+left: 5rem;
+width: 450px;
+height: 600px;
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1rem;
+box-shadow: 0 25px 50px -12px var(--shadow-color);
+display: none;
+flex-direction: column;
+z-index: 1000;
+transition: all 0.3s ease;
+}
+
+.admin-tickets-window.show {
+display: flex;
+}
+
+.admin-tickets-header {
+padding: 1rem;
+border-bottom: 1px solid var(--border-color);
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.admin-tickets-title {
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.admin-tickets-close {
+width: 30px;
+height: 30px;
+border-radius: 50%;
+background: rgba(0, 0, 0, 0.05);
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+color: var(--text-secondary);
+transition: all 0.2s ease;
+}
+
+.admin-tickets-close:hover {
+background: rgba(0, 0, 0, 0.1);
+color: var(--text-primary);
+}
+
+.admin-tickets-tabs {
+display: flex;
+border-bottom: 1px solid var(--border-color);
+}
+
+.admin-tickets-tab {
+flex: 1;
+padding: 0.75rem;
+text-align: center;
+cursor: pointer;
+color: var(--text-secondary);
+transition: all 0.3s ease;
+border-bottom: 2px solid transparent;
+}
+
+.admin-tickets-tab.active {
+color: var(--text-primary);
+border-bottom-color: var(--accent-color);
+}
+
+.admin-tickets-content {
+flex: 1;
+overflow-y: auto;
+padding: 1rem;
+}
+
+.ticket-item {
+background: var(--input-bg);
+border-radius: 0.75rem;
+padding: 1rem;
+margin-bottom: 0.75rem;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.ticket-item:hover {
+background: var(--bg-secondary);
+transform: translateX(5px);
+}
+
+.ticket-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 0.5rem;
+}
+
+.ticket-user {
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.ticket-date {
+font-size: 0.75rem;
+color: var(--text-secondary);
+}
+
+.ticket-message {
+color: var(--text-secondary);
+font-size: 0.875rem;
+margin-bottom: 0.5rem;
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.ticket-action {
+display: flex;
+justify-content: flex-end;
+}
+
+.ticket-join-btn {
+padding: 0.5rem 1rem;
+background: linear-gradient(135deg, var(--success-color), #059669);
+color: white;
+border-radius: 0.5rem;
+font-size: 0.875rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.ticket-join-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.ticket-enter-btn {
+padding: 0.5rem 1rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+border-radius: 0.5rem;
+font-size: 0.875rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.ticket-enter-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Модальное окно пополнения баланса */
+.balance-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.balance-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.balance-modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 400px;
+width: 90%;
+animation: slideUp 0.3s ease;
+}
+
+.balance-modal-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.balance-input-group {
+margin-bottom: 1.5rem;
+}
+
+.balance-label {
+display: block;
+margin-bottom: 0.5rem;
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.balance-input {
+width: 100%;
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.75rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.balance-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.balance-modal-actions {
+display: flex;
+gap: 1rem;
+justify-content: flex-end;
+}
+
+.balance-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.balance-btn-primary {
+background: linear-gradient(135deg, var(--success-color), #059669);
+color: white;
+}
+
+.balance-btn-secondary {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+/* Модальное окно аватара */
+.avatar-modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.avatar-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.avatar-modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 600px;
+width: 90%;
+animation: slideUp 0.3s ease;
+}
+
+.avatar-grid {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 1rem;
+margin-top: 1.5rem;
+}
+
+.avatar-option {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 2rem;
+cursor: pointer;
+transition: all 0.3s ease;
+border: 3px solid transparent;
+}
+
+.avatar-option:hover {
+transform: scale(1.1);
+border-color: var(--accent-color);
+}
+
+.avatar-option.selected {
+border-color: var(--accent-color);
+box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+/* Модальное окно назначения админа */
+.assign-admin-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.assign-admin-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.assign-admin-modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 400px;
+width: 90%;
+animation: slideUp 0.3s ease;
+}
+
+.assign-admin-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.assign-admin-input-group {
+margin-bottom: 1.5rem;
+}
+
+.assign-admin-label {
+display: block;
+margin-bottom: 0.5rem;
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.assign-admin-input {
+width: 100%;
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.75rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.assign-admin-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.assign-admin-actions {
+display: flex;
+gap: 1rem;
+justify-content: flex-end;
+}
+
+.assign-admin-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.assign-admin-btn-primary {
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+}
+
+.assign-admin-btn-secondary {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+/* Модальное окно снятия админа */
+.remove-admin-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.remove-admin-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.remove-admin-modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 400px;
+width: 90%;
+animation: slideUp 0.3s ease;
+}
+
+.remove-admin-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.remove-admin-input-group {
+margin-bottom: 1.5rem;
+}
+
+.remove-admin-label {
+display: block;
+margin-bottom: 0.5rem;
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.remove-admin-input {
+width: 100%;
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.75rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.remove-admin-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.remove-admin-actions {
+display: flex;
+gap: 1rem;
+justify-content: flex-end;
+}
+
+.remove-admin-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.remove-admin-btn-primary {
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+}
+
+.remove-admin-btn-secondary {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+/* Модальное окно информации о пользователе */
+.user-info-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.user-info-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.user-info-modal-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+max-width: 450px;
+width: 90%;
+max-height: 85vh;
+overflow-y: auto;
+animation: slideUp 0.3s ease;
+}
+
+.user-info-title {
+font-size: 1.25rem;
+font-weight: 700;
+margin-bottom: 1rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.user-info-header {
+display: flex;
+align-items: center;
+gap: 1rem;
+margin-bottom: 1.5rem;
+padding-bottom: 1rem;
+border-bottom: 1px solid var(--border-color);
+}
+
+.user-info-avatar {
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.5rem;
+font-weight: 600;
+overflow: hidden;
+flex-shrink: 0;
+}
+
+.user-info-avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.user-info-basic {
+flex: 1;
+}
+
+.user-info-name {
+font-size: 1.1rem;
+font-weight: 700;
+color: var(--text-primary);
+margin-bottom: 0.25rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+
+.user-info-role {
+display: inline-block;
+padding: 0.2rem 0.6rem;
+border-radius: 1rem;
+font-size: 0.7rem;
+font-weight: 600;
+margin-bottom: 0.5rem;
+}
+
+.user-info-role.admin {
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+}
+
+.user-info-role.owner {
+background: var(--owner-red);
+color: white;
+text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+box-shadow: var(--owner-glow);
+animation: ownerPulse 2s infinite;
+}
+
+.user-info-role.user {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+.user-info-nickname {
+color: var(--text-secondary);
+font-size: 0.8rem;
+}
+
+.user-info-details {
+display: grid;
+gap: 0.75rem;
+}
+
+.user-info-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0.6rem;
+background: var(--input-bg);
+border-radius: 0.6rem;
+}
+
+.user-info-label {
+color: var(--text-secondary);
+font-size: 0.8rem;
+font-weight: 500;
+}
+
+.user-info-value {
+color: var(--text-primary);
+font-weight: 600;
+text-align: right;
+font-size: 0.85rem;
+}
+
+.user-info-actions {
+display: flex;
+justify-content: flex-end;
+margin-top: 1.5rem;
+}
+
+.user-info-btn {
+padding: 0.6rem 1.2rem;
+border-radius: 0.6rem;
+font-weight: 600;
+font-size: 0.9rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.user-info-btn-close {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+/* Доверие и отзывы */
+.testimonials {
+padding: 3rem 1rem;
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.testimonials-title {
+font-size: 2rem;
+font-weight: 700;
+margin-bottom: 2rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.testimonials-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+gap: 1.5rem;
+}
+
+.testimonial-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.testimonial-header {
+display: flex;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.testimonial-avatar {
+width: 50px;
+height: 50px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-weight: 600;
+margin-right: 1rem;
+}
+
+.testimonial-info {
+flex: 1;
+}
+
+.testimonial-name {
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.testimonial-date {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.testimonial-rating {
+color: #fbbf24;
+margin-bottom: 0.5rem;
+}
+
+.testimonial-text {
+color: var(--text-primary);
+line-height: 1.6;
+}
+
+/* Сертификаты и награды */
+.certificates {
+padding: 3rem 1rem;
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.certificates-title {
+font-size: 2rem;
+font-weight: 700;
+margin-bottom: 2rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.certificates-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+gap: 1.5rem;
+}
+
+.certificate-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+text-align: center;
+transition: all 0.3s ease;
+}
+
+.certificate-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.certificate-icon {
+font-size: 3rem;
+margin-bottom: 1rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.certificate-name {
+font-weight: 600;
+color: var(--text-primary);
+margin-bottom: 0.5rem;
+}
+
+.certificate-desc {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+/* Профиль пользователя */
+.profile-section {
+display: grid;
+grid-template-columns: 1fr 2fr;
+gap: 2rem;
+}
+
+.profile-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 2rem;
+text-align: center;
+position: relative;
+}
+
+.profile-avatar-container {
+position: relative;
+width: 120px;
+height: 120px;
+margin: 0 auto 1.5rem;
+}
+
+.profile-avatar {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 3rem;
+font-weight: 600;
+overflow: hidden;
+}
+
+.profile-avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.avatar-upload-btn {
+position: absolute;
+bottom: 0;
+right: 0;
+width: 36px;
+height: 36px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+cursor: pointer;
+transition: all 0.3s ease;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-upload-btn:hover {
+transform: scale(1.1);
+}
+
+.avatar-upload-input {
+display: none;
+}
+
+.profile-name {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 0.5rem;
+color: var(--text-primary);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 0.5rem;
+}
+
+.profile-email {
+color: var(--text-secondary);
+margin-bottom: 1.5rem;
+}
+
+.profile-stats {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 1rem;
+margin-top: 1.5rem;
+}
+
+.profile-stat {
+text-align: center;
+padding: 1rem;
+background: var(--input-bg);
+border-radius: 1rem;
+}
+
+.profile-stat-value {
+font-size: 1.5rem;
+font-weight: 700;
+color: var(--text-primary);
+}
+
+.profile-stat-label {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.profile-details {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 2rem;
+}
+
+.profile-form {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 1.5rem;
+}
+
+.profile-form-group {
+display: flex;
+flex-direction: column;
+}
+
+.profile-form-label {
+color: var(--text-secondary);
+font-size: 0.875rem;
+margin-bottom: 0.5rem;
+}
+
+.profile-form-input {
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.75rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.profile-form-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.profile-form-actions {
+grid-column: span 2;
+display: flex;
+justify-content: flex-end;
+gap: 1rem;
+margin-top: 1rem;
+}
+
+.profile-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.profile-btn-primary {
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+}
+
+.profile-btn-secondary {
+background: var(--input-bg);
+color: var(--text-primary);
+}
+
+/* Админ-панель */
+.admin-section {
+padding: 2rem 1rem;
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.admin-title {
+font-size: 2rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.admin-stats {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.admin-stat-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+text-align: center;
+transition: all 0.3s ease;
+}
+
+.admin-stat-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.admin-stat-value {
+font-size: 2rem;
+font-weight: 800;
+margin-bottom: 0.5rem;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.admin-stat-label {
+color: var(--text-secondary);
+font-size: 1rem;
+}
+
+.admin-users {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.admin-users-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+}
+
+.admin-users-table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.admin-users-table th {
+text-align: left;
+padding: 0.75rem;
+color: var(--text-secondary);
+font-weight: 600;
+border-bottom: 1px solid var(--border-color);
+}
+
+.admin-users-table td {
+padding: 0.75rem;
+color: var(--text-primary);
+border-bottom: 1px solid var(--border-color);
+}
+
+.admin-users-table tr:last-child td {
+border-bottom: none;
+}
+
+.admin-balance-form {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.admin-balance-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+}
+
+.admin-balance-form-group {
+display: flex;
+flex-direction: column;
+margin-bottom: 1.5rem;
+}
+
+.admin-balance-label {
+color: var(--text-secondary);
+font-size: 0.875rem;
+margin-bottom: 0.5rem;
+}
+
+.admin-balance-input {
+padding: 0.75rem 1rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.75rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.admin-balance-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.admin-balance-actions {
+display: flex;
+justify-content: flex-end;
+}
+
+.admin-balance-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+}
+
+.admin-balance-btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.admin-assign-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+background: linear-gradient(135deg, #f59e0b, #d97706);
+color: white;
+}
+
+.admin-assign-btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+}
+
+.admin-remove-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+}
+
+.admin-remove-btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* Компании для инвестиций */
+.companies-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+gap: 1.5rem;
+}
+
+.company-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+transition: all 0.3s ease;
+}
+
+.company-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.company-header {
+display: flex;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.company-icon {
+width: 50px;
+height: 50px;
+border-radius: 1rem;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.5rem;
+margin-right: 1rem;
+}
+
+.company-info {
+flex: 1;
+}
+
+.company-name {
+font-weight: 600;
+font-size: 1.25rem;
+color: var(--text-primary);
+}
+
+.company-symbol {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.company-category {
+color: var(--text-secondary);
+font-size: 0.875rem;
+margin-bottom: 0.5rem;
+}
+
+.company-description {
+color: var(--text-primary);
+font-size: 0.875rem;
+margin-bottom: 1rem;
+line-height: 1.4;
+}
+
+.company-price {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 1rem;
+}
+
+.price-value {
+font-size: 1.5rem;
+font-weight: 700;
+color: var(--text-primary);
+}
+
+.price-change {
+font-size: 0.875rem;
+padding: 0.25rem 0.5rem;
+border-radius: 0.5rem;
+}
+
+.price-change.positive {
+background: rgba(16, 185, 129, 0.1);
+color: var(--success-color);
+}
+
+.price-change.negative {
+background: rgba(239, 68, 68, 0.1);
+color: var(--error-color);
+}
+
+.buy-form {
+display: flex;
+gap: 0.5rem;
+}
+
+.buy-input {
+flex: 1;
+padding: 0.5rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.5rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.buy-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+}
+
+.buy-btn {
+padding: 0.5rem 1rem;
+background: linear-gradient(135deg, var(--success-color), #059669);
+color: white;
+border-radius: 0.5rem;
+font-weight: 600;
+font-size: 0.9rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.buy-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+transform: none;
+box-shadow: none;
+}
+
+/* Портфель инвестиций */
+.portfolio-card {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1.5rem;
+padding: 1.5rem;
+transition: all 0.3s ease;
+}
+
+.portfolio-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 20px 40px -10px var(--shadow-color);
+}
+
+.portfolio-header {
+display: flex;
+align-items: center;
+margin-bottom: 1rem;
+}
+
+.portfolio-icon {
+width: 50px;
+height: 50px;
+border-radius: 1rem;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.5rem;
+margin-right: 1rem;
+}
+
+.portfolio-info {
+flex: 1;
+}
+
+.portfolio-name {
+font-weight: 600;
+font-size: 1.25rem;
+color: var(--text-primary);
+}
+
+.portfolio-symbol {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.portfolio-stats {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 1rem;
+margin-bottom: 1rem;
+}
+
+.portfolio-stat {
+text-align: center;
+padding: 0.5rem;
+background: var(--input-bg);
+border-radius: 0.5rem;
+}
+
+.portfolio-stat-value {
+font-weight: 700;
+font-size: 1rem;
+color: var(--text-primary);
+}
+
+.portfolio-stat-label {
+color: var(--text-secondary);
+font-size: 0.75rem;
+}
+
+.portfolio-profit {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 1rem;
+}
+
+.profit-value {
+font-weight: 700;
+font-size: 1.25rem;
+}
+
+.profit-value.positive {
+color: var(--success-color);
+}
+
+.profit-value.negative {
+color: var(--error-color);
+}
+
+.profit-percentage {
+font-size: 0.875rem;
+padding: 0.25rem 0.5rem;
+border-radius: 0.5rem;
+}
+
+.profit-percentage.positive {
+background: rgba(16, 185, 129, 0.1);
+color: var(--success-color);
+}
+
+.profit-percentage.negative {
+background: rgba(239, 68, 68, 0.1);
+color: var(--error-color);
+}
+
+.portfolio-actions {
+display: flex;
+gap: 0.5rem;
+}
+
+.sell-btn {
+flex: 1;
+padding: 0.5rem;
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+border-radius: 0.5rem;
+font-weight: 600;
+font-size: 0.9rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.sell-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.sell-form {
+display: flex;
+gap: 0.5rem;
+}
+
+.sell-input {
+flex: 1;
+padding: 0.5rem;
+background: var(--input-bg);
+border: 2px solid transparent;
+border-radius: 0.5rem;
+font-size: 1rem;
+color: var(--text-primary);
+transition: all 0.3s ease;
+outline: none;
+}
+
+.sell-input:focus {
+background: var(--bg-secondary);
+border-color: var(--accent-color);
+}
+
+/* Баланс с акциями */
+.balance-investments {
+margin-top: 2rem;
+}
+
+.balance-investment-item {
+display: flex;
+align-items: center;
+padding: 1rem;
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 1rem;
+margin-bottom: 1rem;
+transition: all 0.3s ease;
+}
+
+.balance-investment-item:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 20px -5px var(--shadow-color);
+}
+
+.balance-investment-icon {
+width: 40px;
+height: 40px;
+border-radius: 0.75rem;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.25rem;
+margin-right: 1rem;
+}
+
+.balance-investment-info {
+flex: 1;
+}
+
+.balance-investment-name {
+font-weight: 600;
+color: var(--text-primary);
+}
+
+.balance-investment-price {
+color: var(--text-secondary);
+font-size: 0.875rem;
+}
+
+.balance-investment-profit {
+margin-right: 1rem;
+text-align: right;
+}
+
+.balance-investment-profit-value {
+font-weight: 700;
+font-size: 1.1rem;
+}
+
+.balance-investment-profit-value.positive {
+color: var(--success-color);
+}
+
+.balance-investment-profit-value.negative {
+color: var(--error-color);
+}
+
+.balance-investment-profit-percentage {
+font-size: 0.875rem;
+padding: 0.25rem 0.5rem;
+border-radius: 0.5rem;
+}
+
+.balance-investment-profit-percentage.positive {
+background: rgba(16, 185, 129, 0.1);
+color: var(--success-color);
+}
+
+.balance-investment-profit-percentage.negative {
+background: rgba(239, 68, 68, 0.1);
+color: var(--error-color);
+}
+
+.balance-sell-btn {
+padding: 0.5rem 1rem;
+background: linear-gradient(135deg, var(--error-color), #dc2626);
+color: white;
+border-radius: 0.5rem;
+font-weight: 600;
+font-size: 0.9rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.balance-sell-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Модальное окно для просмотра изображений */
+.image-modal {
+display: none;
+position: fixed;
+z-index: 3000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.9);
+cursor: pointer;
+animation: fadeIn 0.3s ease;
+}
+
+.image-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.image-modal-content {
+max-width: 90%;
+max-height: 90%;
+object-fit: contain;
+border-radius: 0.5rem;
+}
+
+.image-modal-close {
+position: absolute;
+top: 20px;
+right: 40px;
+color: white;
+font-size: 40px;
+font-weight: bold;
+cursor: pointer;
+transition: 0.3s;
+}
+
+.image-modal-close:hover {
+color: #bbb;
+}
+
+/* Модальное окно смены аккаунта */
+.switch-account-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(5px);
+animation: fadeIn 0.3s ease;
+}
+
+.switch-account-modal.show {
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.switch-account-content {
+background: var(--bg-secondary);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--border-color);
+border-radius: 2rem;
+padding: 2rem;
+max-width: 400px;
+width: 90%;
+animation: slideUp 0.3s ease;
+}
+
+.switch-account-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 1.5rem;
+color: var(--text-primary);
+text-align: center;
+}
+
+.switch-account-form {
+display: flex;
+flex-direction: column;
+gap: 1rem;
+}
+
+.switch-account-btn {
+padding: 0.75rem 1.5rem;
+border-radius: 0.75rem;
+font-weight: 600;
+font-size: 1rem;
+border: none;
+cursor: pointer;
+transition: all 0.3s ease;
+background: linear-gradient(135deg, var(--accent-color), #764ba2);
+color: white;
+}
+
+.switch-account-btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+.profile-section {
+grid-template-columns: 1fr;
+}
+
+.profile-form {
+grid-template-columns: 1fr;
+}
+
+.profile-form-actions {
+grid-column: span 1;
+}
+
+.admin-users-table {
+font-size: 0.875rem;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+padding: 0.5rem;
+}
+
+.companies-grid {
+grid-template-columns: 1fr;
+}
+
+.portfolio-stats {
+grid-template-columns: 1fr;
+}
+
+.main-admin-btn {
+right: 2rem;
+bottom: 5rem;
+}
+
+.main-home-btn {
+right: 2rem;
+bottom: 2rem;
+}
+
+.support-chat-window {
+width: calc(100vw - 2rem);
+left: 1rem;
+right: 1rem;
+}
+
+.admin-tickets-window {
+width: calc(100vw - 2rem);
+left: 1rem;
+right: 1rem;
+}
+
+.admin-tickets-btn {
+left: 2rem;
+bottom: 5rem;
+}
+
+.avatar-grid {
+grid-template-columns: repeat(3, 1fr);
+}
+
+.user-info-modal-content {
+max-width: 95%;
+padding: 1rem;
+}
+
+.nav-menu {
+display: none;
+}
+}
+</style>
+</head>
+<body>
+<!-- Анимированный фон -->
+<div class="animated-bg">
+<div class="gradient-orb" style="width: 400px; height: 400px; background: linear-gradient(135deg, #667eea, #764ba2); top: -200px; left: -200px;"></div>
+<div class="gradient-orb" style="width: 300px; height: 300px; background: linear-gradient(135deg, #ec4899, #f43f5e); bottom: -150px; right: -150px; animation-delay: 5s;"></div>
+<div class="gradient-orb" style="width: 350px; height: 350px; background: linear-gradient(135deg, #3b82f6, #06b6d4); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 10s;"></div>
+
+<!-- Плавающие частицы -->
+<div class="particle" style="width: 4px; height: 4px; left: 10%; animation-delay: 0s;"></div>
+<div class="particle" style="width: 6px; height: 6px; left: 20%; animation-delay: 2s;"></div>
+<div class="particle" style="width: 3px; height: 3px; left: 30%; animation-delay: 4s;"></div>
+<div class="particle" style="width: 5px; height: 5px; left: 40%; animation-delay: 6s;"></div>
+<div class="particle" style="width: 4px; height: 4px; left: 50%; animation-delay: 8s;"></div>
+<div class="particle" style="width: 6px; height: 6px; left: 60%; animation-delay: 10s;"></div>
+<div class="particle" style="width: 3px; height: 3px; left: 70%; animation-delay: 12s;"></div>
+<div class="particle" style="width: 5px; height: 5px; left: 80%; animation-delay: 14s;"></div>
+<div class="particle" style="width: 4px; height: 4px; left: 90%; animation-delay: 16s;"></div>
+</div>
+
+<!-- Страница входа -->
+<div id="loginPage" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+<div class="w-full max-w-6xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+<!-- Левая панель -->
+<div class="hidden lg:block fade-in-up">
+<div class="glass-card rounded-3xl p-12">
+<div class="text-center mb-8">
+<h1 class="text-5xl font-black mb-4" style="background: linear-gradient(135deg, var(--accent-color), #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Clean.Invest</h1>
+<p style="color: var(--text-secondary);" class="text-lg">El futuro de las inversiones inteligentes</p>
+</div>
+
+<div class="space-y-6">
+<div class="flex items-start space-x-4 stagger-1">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center text-white flex-shrink-0">
+<i class="fas fa-shield-alt"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg mb-1" style="color: var(--text-primary);">Seguridad Maxima</h3>
+<p style="color: var(--text-secondary);">Proteccion de nivel bancario para tus inversiones</p>
+</div>
+</div>
+
+<div class="flex items-start space-x-4 stagger-2">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center text-white flex-shrink-0">
+<i class="fas fa-chart-line"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg mb-1" style="color: var(--text-primary);">Rendimientos Excepcionales</h3>
+<p style="color: var(--text-secondary);">Promedio del 18% anual en tus inversiones</p>
+</div>
+</div>
+
+<div class="flex items-start space-x-4 stagger-3">
+<div class="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-400 to-purple-600 flex items-center justify-center text-white flex-shrink-0">
+<i class="fas fa-robot"></i>
+</div>
+<div>
+<h3 class="font-semibold text-lg mb-1" style="color: var(--text-primary);">IA Avanzada</h3>
+<p style="color: var(--text-secondary);">Algoritmos inteligentes para maximizar ganancias</p>
+</div>
+</div>
+</div>
+
+<div class="mt-12 p-6 rounded-2xl" style="background: var(--input-bg);">
+<div class="flex items-center justify-between">
+<div>
+<p class="text-3xl font-bold" style="color: var(--text-primary);" id="userCountDisplay">0</p>
+<p style="color: var(--text-secondary);">Inversores Activos</p>
+</div>
+<div class="text-right">
+<p class="text-3xl font-bold" style="color: var(--text-primary);">4.9⭐</p>
+<p style="color: var(--text-secondary);">Calificacion</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Правая панель с формой входа -->
+<div class="fade-in-up stagger-4">
+<div class="glass-card rounded-3xl p-8 lg:p-10 relative">
+<!-- Переключатель темы -->
+<div class="flex justify-end mb-6">
+<label class="theme-toggle">
+<input type="checkbox" id="themeSwitch">
+<span class="theme-slider"></span>
+</label>
+</div>
+
+<!-- Заголовок формы -->
+<div class="text-center mb-8">
+<h2 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Bienvenido de Nuevo</h2>
+<p style="color: var(--text-secondary);">Inicia sesion para continuar</p>
+</div>
+
+<!-- Форма входа -->
+<form id="loginFormElement" class="space-y-6">
+<!-- Поле никнейма -->
+<div class="custom-input">
+<input type="text" id="loginNickname" placeholder=" " required>
+<label for="loginNickname">Nombre de usuario</label>
+<i class="fas fa-user icon"></i>
+</div>
+
+<!-- Поле пароля -->
+<div class="custom-input">
+<input type="password" id="loginPassword" placeholder=" " required>
+<label for="loginPassword">Contrasena</label>
+<i class="fas fa-lock icon"></i>
+<button type="button" id="toggleLoginPasswordBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2" style="color: var(--text-secondary);">
+<i class="fas fa-eye"></i>
+</button>
+</div>
+
+<!-- Кнопка отправки -->
+<button type="submit" class="submit-btn w-full relative">
+<span class="relative z-10">Iniciar Sesion</span>
+<i class="fas fa-sign-in-alt ml-2 relative z-10"></i>
+</button>
+</form>
+
+<!-- Регистрация -->
+<div class="text-center mt-6">
+<p style="color: var(--text-secondary);">
+No tienes cuenta?
+<a href="#" id="openRegisterModal" class="font-semibold" style="color: var(--accent-color);">Registrate aqui</a>
+</p>
+</div>
+</div>
+
+<!-- Подпись -->
+<div class="text-center mt-6">
+<p style="color: var(--text-secondary); opacity: 0.6; font-size: 0.75rem;">#1 por eleccion • Mas de 50,000 inversores confian en nosotros</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно регистрации -->
+<div id="registerModal" class="modal">
+<div class="modal-content">
+<span class="close-modal" id="closeRegisterModal">&times;</span>
+
+<!-- Заголовок формы -->
+<div class="text-center mb-8">
+<h2 class="text-3xl font-bold mb-2" style="color: var(--text-primary);">Crea tu Cuenta</h2>
+<p style="color: var(--text-secondary);">Comienza tu viaje financiero hoy</p>
+</div>
+
+<!-- Форма регистрации -->
+<form id="registrationForm" class="space-y-6">
+<!-- Поле имени -->
+<div class="custom-input">
+<input type="text" id="name" placeholder=" " required>
+<label for="name">Nombre</label>
+<i class="fas fa-user icon"></i>
+<div class="progress-bar" id="nameProgress" style="width: 0%;"></div>
+</div>
+
+<!-- Поле никнейма -->
+<div class="custom-input">
+<input type="text" id="username" placeholder=" " required minlength="4">
+<label for="username">Nombre de usuario</label>
+<i class="fas fa-user icon"></i>
+<div class="progress-bar" id="usernameProgress" style="width: 0%;"></div>
+</div>
+
+<!-- Поле email -->
+<div class="custom-input">
+<input type="email" id="email" placeholder=" " required>
+<label for="email">Correo electronico</label>
+<i class="fas fa-envelope icon"></i>
+<div class="progress-bar" id="emailProgress" style="width: 0%;"></div>
+</div>
+
+<!-- Поле пароля -->
+<div class="custom-input">
+<input type="password" id="password" placeholder=" " required minlength="7">
+<label for="password">Contrasena</label>
+<i class="fas fa-lock icon"></i>
+<button type="button" id="togglePasswordBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2" style="color: var(--text-secondary);">
+<i class="fas fa-eye"></i>
+</button>
+<div class="password-strength-indicator">
+<div class="strength-bar" data-strength="1"></div>
+<div class="strength-bar" data-strength="2"></div>
+<div class="strength-bar" data-strength="3"></div>
+<div class="strength-bar" data-strength="4"></div>
+</div>
+</div>
+
+<!-- Чекбокс условий -->
+<div class="flex items-start">
+<label class="custom-checkbox">
+<input type="checkbox" id="terms" required>
+<span class="checkmark"></span>
+</label>
+<label for="terms" style="color: var(--text-secondary); font-size: 0.875rem;">
+Acepto los <a href="#" class="text-purple-600 hover:underline">terminos y condiciones</a> y la <a href="#" class="text-purple-600 hover:underline">politica de privacidad</a>
+</label>
+</div>
+
+<!-- Кнопка отправки -->
+<button type="submit" class="submit-btn w-full relative">
+<span class="relative z-10">Crear Cuenta Gratuita</span>
+<i class="fas fa-arrow-right ml-2 relative z-10"></i>
+</button>
+</form>
+</div>
+</div>
+
+<!-- Модальное окно аватара -->
+<div id="avatarModal" class="avatar-modal">
+<div class="avatar-modal-content">
+<span class="close-modal" id="closeAvatarModal">&times;</span>
+
+<h2 class="text-2xl font-bold mb-4" style="color: var(--text-primary); text-align: center;">Selecciona tu Avatar</h2>
+
+<div class="avatar-grid">
+<div class="avatar-option" data-avatar="avatar1" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+🚀
+</div>
+<div class="avatar-option" data-avatar="avatar2" style="background: linear-gradient(135deg, #10b981, #059669);">
+💎
+</div>
+<div class="avatar-option" data-avatar="avatar3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+🌟
+</div>
+<div class="avatar-option" data-avatar="avatar4" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+🔥
+</div>
+<div class="avatar-option" data-avatar="avatar5" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+⚡
+</div>
+<div class="avatar-option" data-avatar="avatar6" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+👑
+</div>
+<div class="avatar-option" data-avatar="avatar7" style="background: linear-gradient(135deg, #ec4899, #f43f5e);">
+💰
+</div>
+<div class="avatar-option" data-avatar="avatar8" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+🎯
+</div>
+<div class="avatar-option" data-avatar="avatar9" style="background: linear-gradient(135deg, #84cc16, #65a30d);">
+🏆
+</div>
+<div class="avatar-option" data-avatar="avatar10" style="background: linear-gradient(135deg, #f97316, #ea580c);">
+🎨
+</div>
+</div>
+
+<div class="flex justify-end mt-6">
+<button id="saveAvatarBtn" class="submit-btn">
+Guardar Avatar
+</button>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно пополнения баланса -->
+<div id="balanceModal" class="balance-modal">
+<div class="balance-modal-content">
+<h2 class="balance-modal-title">Anadir Balance</h2>
+<div class="balance-input-group">
+<label class="balance-label">Cantidad ($)</label>
+<input type="number" id="balanceAmountInput" class="balance-input" placeholder="Ingrese la cantidad" step="0.01" min="0.01">
+</div>
+<div class="balance-modal-actions">
+<button class="balance-btn balance-btn-secondary" onclick="closeBalanceModal()">Cancelar</button>
+<button class="balance-btn balance-btn-primary" onclick="confirmAddBalance()">Anadir</button>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно назначения админа -->
+<div id="assignAdminModal" class="assign-admin-modal">
+<div class="assign-admin-modal-content">
+<span class="close-modal" id="closeAssignAdminModal">&times;</span>
+
+<h2 class="assign-admin-title">Asignar Administrador</h2>
+<div class="assign-admin-input-group">
+<label class="assign-admin-label">Nombre de usuario</label>
+<input type="text" id="assignAdminUsername" class="assign-admin-input" placeholder="Ingrese el nombre de usuario">
+</div>
+<div class="assign-admin-actions">
+<button class="assign-admin-btn assign-admin-btn-secondary" onclick="closeAssignAdminModal()">Cancelar</button>
+<button class="assign-admin-btn assign-admin-btn-primary" onclick="confirmAssignAdmin()">Asignar</button>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно снятия админа -->
+<div id="removeAdminModal" class="remove-admin-modal">
+<div class="remove-admin-modal-content">
+<span class="close-modal" id="closeRemoveAdminModal">&times;</span>
+
+<h2 class="remove-admin-title">Quitar Administrador</h2>
+<div class="remove-admin-input-group">
+<label class="remove-admin-label">Nombre de usuario</label>
+<input type="text" id="removeAdminUsername" class="remove-admin-input" placeholder="Ingrese el nombre de usuario">
+</div>
+<div class="remove-admin-actions">
+<button class="remove-admin-btn remove-admin-btn-secondary" onclick="closeRemoveAdminModal()">Cancelar</button>
+<button class="remove-admin-btn remove-admin-btn-primary" onclick="confirmRemoveAdmin()">Quitar</button>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно информации о пользователе -->
+<div id="userInfoModal" class="user-info-modal">
+<div class="user-info-modal-content">
+<span class="close-modal" id="closeUserInfoModal">&times;</span>
+
+<h2 class="user-info-title">Informacion del Usuario</h2>
+
+<div class="user-info-header">
+<div class="user-info-avatar" id="userInfoAvatar">
+<span id="userInfoAvatarText">U</span>
+<img id="userInfoAvatarImg" style="display: none;" alt="Avatar">
+</div>
+<div class="user-info-basic">
+<div class="user-info-name" id="userInfoName">
+Usuario
+<span id="userInfoRoleBadge" class="owner-badge" style="display: none;">OWNER</span>
+</div>
+<div class="user-info-role" id="userInfoRole">user</div>
+<div class="user-info-nickname" id="userInfoNickname">@usuario</div>
+</div>
+</div>
+
+<div class="user-info-details">
+<div class="user-info-item">
+<span class="user-info-label">ID</span>
+<span class="user-info-value" id="userInfoId">-</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Correo</span>
+<span class="user-info-value" id="userInfoEmail">-</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Telefono</span>
+<span class="user-info-value" id="userInfoPhone">No vinculado</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Fecha de registro</span>
+<span class="user-info-value" id="userInfoRegDate">-</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Ultimo login</span>
+<span class="user-info-value" id="userInfoLastLogin">-</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Balance</span>
+<span class="user-info-value" id="userInfoBalance">$0</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Total invertido</span>
+<span class="user-info-value" id="userInfoTotalInvested">$0</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Ganancias totales</span>
+<span class="user-info-value" id="userInfoTotalProfit">$0</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Inversiones</span>
+<span class="user-info-value" id="userInfoInvestmentsCount">0</span>
+</div>
+<div class="user-info-item">
+<span class="user-info-label">Tasa de exito</span>
+<span class="user-info-value" id="userInfoSuccessRate">0%</span>
+</div>
+</div>
+
+<div class="user-info-actions">
+<button class="user-info-btn user-info-btn-close" onclick="closeUserInfoModal()">Cerrar</button>
+</div>
+</div>
+</div>
+
+<!-- Модальное окно смены аккаунта -->
+<div id="switchAccountModal" class="switch-account-modal">
+<div class="switch-account-content">
+<span class="close-modal" id="closeSwitchAccountModal">&times;</span>
+
+<h2 class="switch-account-title">Cambiar de Cuenta</h2>
+
+<form id="switchAccountForm" class="switch-account-form">
+<div class="custom-input">
+<input type="text" id="switchNickname" placeholder=" " required>
+<label for="switchNickname">Nombre de usuario</label>
+<i class="fas fa-user icon"></i>
+</div>
+
+<div class="custom-input">
+<input type="password" id="switchPassword" placeholder=" " required>
+<label for="switchPassword">Contrasena</label>
+<i class="fas fa-lock icon"></i>
+</div>
+
+<button type="submit" class="switch-account-btn">Cambiar Cuenta</button>
+</form>
+</div>
+</div>
+
+<!-- Модальное окно для просмотра изображений -->
+<div id="imageModal" class="image-modal">
+<span class="image-modal-close" onclick="closeImageModal()">&times;</span>
+<img class="image-modal-content" id="modalImage">
+</div>
+
+<!-- Главное меню -->
+<div id="mainPage" class="main-content relative z-10 hidden">
+<!-- Навигационная панель -->
+<nav class="nav-bar">
+<div class="nav-container">
+<div class="nav-logo">Clean.Invest</div>
+<div class="nav-menu">
+<div class="nav-item active" data-section="home">Inicio</div>
+<div class="nav-item" data-section="companies">Empresas</div>
+<div class="nav-item" data-section="portfolio">Portafolio</div>
+<div class="nav-item" data-section="balance">Balance</div>
+<div class="nav-item" data-section="statistics">Estadisticas</div>
+<div class="nav-item" data-section="profile">Perfil</div>
+</div>
+<div class="nav-user">
+<div class="nav-avatar" id="navAvatar">
+<span id="navAvatarText">U</span>
+<img id="navAvatarImg" style="display: none;" alt="Avatar">
+</div>
+<div>
+<div style="color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;" id="navUsername">
+Usuario
+<span id="navOwnerBadge" class="owner-badge" style="display: none;">OWNER</span>
+</div>
+<div style="color: var(--text-secondary); font-size: 0.75rem;" id="navEmail">email@example.com</div>
+</div>
+<button onclick="logout()" class="ml-4 p-2 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+<i class="fas fa-sign-out-alt"></i>
+</button>
+</div>
+</div>
+</nav>
+
+<!-- Главный экран -->
+<div id="homeSection" class="section">
+<h1 class="hero-title">Clean.Invest</h1>
+<p class="hero-subtitle">
+Somos el sitio de inversion numero 1. Al elegirnos, eliges un futuro brillante.
+Mas de 30,000 inversores han transformado sus vidas. ¡Tu futuro esta en tus manos!
+</p>
+
+<div class="stats-container">
+<div class="stat-card">
+<div class="stat-value" id="activeUsersCount">1,203</div>
+<div class="stat-label">Usuarios Activos</div>
+</div>
+<div class="stat-card">
+<div class="stat-value" id="totalBalance">$2.3M</div>
+<div class="stat-label">Balance Total</div>
+</div>
+<div class="stat-card">
+<div class="stat-value">$216M</div>
+<div class="stat-label">Fondos Invertidos</div>
+</div>
+</div>
+
+<!-- Объединенная информация из всех разделов -->
+<div class="glass-card rounded-3xl p-8 mt-8">
+<h2 class="section-title">Tu Resumen Financiero</h2>
+
+<!-- Баланс -->
+<div class="balance-card">
+<div class="balance-amount" id="userBalance">$1,000</div>
+<div class="balance-label">Balance Total Disponible</div>
+<button class="deposit-btn" onclick="showDepositNotification()">
+<i class="fas fa-plus-circle mr-2"></i>Depositar Fondos
+</button>
+</div>
+
+<!-- Инвестиции -->
+<h3 class="text-xl font-bold mt-8 mb-4" style="color: var(--text-primary);">Tus Inversiones</h3>
+<div class="investments-grid" id="userInvestments">
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+<i class="fas fa-leaf"></i>
+</div>
+<div>
+<div class="investment-name">EcoEnergy Plus</div>
+<div class="investment-category">Energia renovable</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value">+22.5%</div>
+<div class="investment-label">Rendimiento</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$4,250</div>
+<div class="investment-label">Invertido</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$5,206</div>
+<div class="investment-label">Valor actual</div>
+</div>
+</div>
+</div>
+
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+<i class="fas fa-microchip"></i>
+</div>
+<div>
+<div class="investment-name">TechFuture AI</div>
+<div class="investment-category">Inteligencia artificial</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value">+15.3%</div>
+<div class="investment-label">Rendimiento</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$5,500</div>
+<div class="investment-label">Invertido</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$6,342</div>
+<div class="investment-label">Valor actual</div>
+</div>
+</div>
+</div>
+
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+<i class="fas fa-rocket"></i>
+</div>
+<div>
+<div class="investment-name">SpaceX Ventures</div>
+<div class="investment-category">Aeroespacial</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value">+31.7%</div>
+<div class="investment-label">Rendimiento</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$3,200</div>
+<div class="investment-label">Invertido</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value">$4,214</div>
+<div class="investment-label">Valor actual</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Статистика -->
+<h3 class="text-xl font-bold mt-8 mb-4" style="color: var(--text-primary);">Estadisticas de Inversion</h3>
+<div class="stats-chart">
+<h3 style="color: var(--text-primary); margin-bottom: 1rem;">Rendimiento Mensual</h3>
+<div class="chart-container">
+<div class="chart-bars">
+<div class="chart-bar" style="height: 60%;">
+<div class="chart-value">+5.2%</div>
+<div class="chart-label">Ene</div>
+</div>
+<div class="chart-bar" style="height: 80%;">
+<div class="chart-value">+8.7%</div>
+<div class="chart-label">Feb</div>
+</div>
+<div class="chart-bar" style="height: 45%;">
+<div class="chart-value">+3.1%</div>
+<div class="chart-label">Mar</div>
+</div>
+<div class="chart-bar" style="height: 90%;">
+<div class="chart-value">+12.4%</div>
+<div class="chart-label">Abr</div>
+</div>
+<div class="chart-bar" style="height: 70%;">
+<div class="chart-value">+7.8%</div>
+<div class="chart-label">May</div>
+</div>
+<div class="chart-bar" style="height: 85%;">
+<div class="chart-value">+10.2%</div>
+<div class="chart-label">Jun</div>
+</div>
+<div class="chart-bar" style="height: 95%;">
+<div class="chart-value">+15.6%</div>
+<div class="chart-label">Jul</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="stats-grid">
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">75%</div>
+<div class="stat-circle-label">Rentabilidad</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Rentabilidad Anual</div>
+<div class="stat-info-desc">Por encima del mercado</div>
+</div>
+</div>
+
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg" style="background: conic-gradient(var(--success-color) 0% 85%, var(--input-bg) 85% 100%);">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">85%</div>
+<div class="stat-circle-label">Exito</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Tasa de Exito</div>
+<div class="stat-info-desc">Inversiones rentables</div>
+</div>
+</div>
+
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg" style="background: conic-gradient(#f59e0b 0% 60%, var(--input-bg) 60% 100%);">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">60%</div>
+<div class="stat-circle-label">Diversificado</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Cartera Diversificada</div>
+<div class="stat-info-desc">Distribucion sectorial</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Отзывы клиентов -->
+<div class="testimonials">
+<h2 class="testimonials-title">Lo que dicen nuestros clientes</h2>
+<div class="testimonials-grid">
+<div class="testimonial-card">
+<div class="testimonial-header">
+<div class="testimonial-avatar">MC</div>
+<div class="testimonial-info">
+<div class="testimonial-name">Maria C.</div>
+<div class="testimonial-date">Hace 2 semanas</div>
+</div>
+</div>
+<div class="testimonial-rating">
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+</div>
+<div class="testimonial-text">
+"Clean.Invest ha transformado completamente mi situacion financiera. Empece con solo $500 y ahora tengo un portafolio diversificado que me genera ingresos pasivos. ¡Increible plataforma!"
+</div>
+</div>
+
+<div class="testimonial-card">
+<div class="testimonial-header">
+<div class="testimonial-avatar">JR</div>
+<div class="testimonial-info">
+<div class="testimonial-name">Juan R.</div>
+<div class="testimonial-date">Hace 1 mes</div>
+</div>
+</div>
+<div class="testimonial-rating">
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+</div>
+<div class="testimonial-text">
+"La IA de Clean.Invest es simplemente impresionante. Las recomendaciones de inversion siempre aciertan y el soporte al cliente es excepcional. Definitivamente la mejor plataforma de inversion que he utilizado."
+</div>
+</div>
+
+<div class="testimonial-card">
+<div class="testimonial-header">
+<div class="testimonial-avatar">AL</div>
+<div class="testimonial-info">
+<div class="testimonial-name">Ana L.</div>
+<div class="testimonial-date">Hace 3 semanas</div>
+</div>
+</div>
+<div class="testimonial-rating">
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star"></i>
+<i class="fas fa-star-half-alt"></i>
+</div>
+<div class="testimonial-text">
+"Como principiante en el mundo de las inversiones, Clean.Invest me ha guiado en cada paso. La interfaz es intuitiva y los recursos educativos me han ayudado a tomar decisiones informadas. Muy recomendada."
+</div>
+</div>
+</div>
+</div>
+
+<!-- Сертификаты и награды -->
+<div class="certificates">
+<h2 class="certificates-title">Nuestros Reconocimientos</h2>
+<div class="certificates-grid">
+<div class="certificate-card">
+<div class="certificate-icon">
+<i class="fas fa-award"></i>
+</div>
+<div class="certificate-name">Mejor Plataforma 2023</div>
+<div class="certificate-desc">Premio FinTech Global</div>
+</div>
+
+<div class="certificate-card">
+<div class="certificate-icon">
+<i class="fas fa-certificate"></i>
+</div>
+<div class="certificate-name">Certificacion SSL</div>
+<div class="certificate-desc">Seguridad de Nivel Bancario</div>
+</div>
+
+<div class="certificate-card">
+<div class="certificate-icon">
+<i class="fas fa-shield-alt"></i>
+</div>
+<div class="certificate-name">Proteccion de Inversores</div>
+<div class="certificate-desc">Hasta $100,000 USD</div>
+</div>
+
+<div class="certificate-card">
+<div class="certificate-icon">
+<i class="fas fa-handshake"></i>
+</div>
+<div class="certificate-name">Socio Oficial</div>
+<div class="certificate-desc">Bancos Internacionales</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Раздел Компании -->
+<div id="companiesSection" class="section" style="display: none;">
+<h2 class="section-title">Empresas para Invertir</h2>
+<div class="companies-grid" id="companiesGrid">
+<!-- Компании будут загружены динамически -->
+</div>
+</div>
+
+<!-- Раздел Портфель -->
+<div id="portfolioSection" class="section" style="display: none;">
+<h2 class="section-title">Tu Portafolio de Inversiones</h2>
+<div class="investments-grid" id="portfolioGrid">
+<!-- Инвестиции будут загружены динамически -->
+</div>
+</div>
+
+<!-- Раздел Баланс -->
+<div id="balanceSection" class="section" style="display: none;">
+<h2 class="section-title">Tu Balance</h2>
+<div class="balance-card">
+<div class="balance-amount" id="balanceAmount">$1,000</div>
+<div class="balance-label">Balance Total Disponible</div>
+<button class="deposit-btn" onclick="showDepositNotification()">
+<i class="fas fa-plus-circle mr-2"></i>Depositar Fondos
+</button>
+</div>
+
+<div class="investments-grid">
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+<i class="fas fa-arrow-up"></i>
+</div>
+<div>
+<div class="investment-name">Depositos</div>
+<div class="investment-category">Total depositado</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value" id="totalDepositsMonth">$0</div>
+<div class="investment-label">Este mes</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value" id="totalDeposits">$1,000</div>
+<div class="investment-label">Total</div>
+</div>
+</div>
+</div>
+
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+<i class="fas fa-arrow-down"></i>
+</div>
+<div>
+<div class="investment-name">Retiros</div>
+<div class="investment-category">Total retirado</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value" id="totalWithdrawalsMonth">$0</div>
+<div class="investment-label">Este mes</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value" id="totalWithdrawals">$0</div>
+<div class="investment-label">Total</div>
+</div>
+</div>
+</div>
+
+<div class="investment-card">
+<div class="investment-header">
+<div class="investment-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+<i class="fas fa-chart-line"></i>
+</div>
+<div>
+<div class="investment-name">Ganancias</div>
+<div class="investment-category">Beneficios obtenidos</div>
+</div>
+</div>
+<div class="investment-stats">
+<div class="investment-stat">
+<div class="investment-value" id="totalProfitsMonth">$0</div>
+<div class="investment-label">Este mes</div>
+</div>
+<div class="investment-stat">
+<div class="investment-value" id="totalProfits">$0</div>
+<div class="investment-label">Total</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Инвестиции в балансе -->
+<h3 class="text-xl font-bold mt-8 mb-4" style="color: var(--text-primary);">Tus Acciones</h3>
+<div class="balance-investments" id="balanceInvestments">
+<!-- Акции будут загружены динамически -->
+</div>
+</div>
+
+<!-- Раздел Статистика -->
+<div id="statisticsSection" class="section" style="display: none;">
+<h2 class="section-title">Estadisticas de Inversion</h2>
+
+<div class="stats-chart">
+<h3 style="color: var(--text-primary); margin-bottom: 1rem;">Rendimiento Mensual</h3>
+<div class="chart-container">
+<div class="chart-bars">
+<div class="chart-bar" style="height: 60%;">
+<div class="chart-value">+5.2%</div>
+<div class="chart-label">Ene</div>
+</div>
+<div class="chart-bar" style="height: 80%;">
+<div class="chart-value">+8.7%</div>
+<div class="chart-label">Feb</div>
+</div>
+<div class="chart-bar" style="height: 45%;">
+<div class="chart-value">+3.1%</div>
+<div class="chart-label">Mar</div>
+</div>
+<div class="chart-bar" style="height: 90%;">
+<div class="chart-value">+12.4%</div>
+<div class="chart-label">Abr</div>
+</div>
+<div class="chart-bar" style="height: 70%;">
+<div class="chart-value">+7.8%</div>
+<div class="chart-label">May</div>
+</div>
+<div class="chart-bar" style="height: 85%;">
+<div class="chart-value">+10.2%</div>
+<div class="chart-label">Jun</div>
+</div>
+<div class="chart-bar" style="height: 95%;">
+<div class="chart-value">+15.6%</div>
+<div class="chart-label">Jul</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="stats-grid">
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">75%</div>
+<div class="stat-circle-label">Rentabilidad</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Rentabilidad Anual</div>
+<div class="stat-info-desc">Por encima del mercado</div>
+</div>
+</div>
+
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg" style="background: conic-gradient(var(--success-color) 0% 85%, var(--input-bg) 85% 100%);">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">85%</div>
+<div class="stat-circle-label">Exito</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Tasa de Exito</div>
+<div class="stat-info-desc">Inversiones rentables</div>
+</div>
+</div>
+
+<div>
+<div class="stat-circle">
+<div class="stat-circle-bg" style="background: conic-gradient(#f59e0b 0% 60%, var(--input-bg) 60% 100%);">
+<div class="stat-circle-inner">
+<div class="stat-circle-value">60%</div>
+<div class="stat-circle-label">Diversificado</div>
+</div>
+</div>
+</div>
+<div class="stat-info">
+<div class="stat-info-title">Cartera Diversificada</div>
+<div class="stat-info-desc">Distribucion sectorial</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Раздел Профиль -->
+<div id="profileSection" class="section" style="display: none;">
+<h2 class="section-title">Mi Perfil</h2>
+<div class="profile-section">
+<div class="profile-card">
+<div class="profile-avatar-container">
+<div class="profile-avatar" id="profileAvatar">
+<span id="profileAvatarText">U</span>
+<img id="profileAvatarImg" style="display: none;" alt="Avatar">
+</div>
+<label for="avatarUpload" class="avatar-upload-btn" onclick="openAvatarModal()">
+<i class="fas fa-camera"></i>
+</label>
+<input type="file" id="avatarUpload" class="avatar-upload-input" accept="image/*" style="display: none;">
+</div>
+<div class="profile-name" id="profileName">
+Usuario
+<span id="profileOwnerBadge" class="owner-badge" style="display: none;">OWNER</span>
+</div>
+<div class="profile-email" id="profileEmail">email@example.com</div>
+<div class="profile-stats">
+<div class="profile-stat">
+<div class="profile-stat-value" id="profileInvestmentsCount">0</div>
+<div class="profile-stat-label">Inversiones</div>
+</div>
+<div class="profile-stat">
+<div class="profile-stat-value" id="profileSuccessRate">0%</div>
+<div class="profile-stat-label">Tasa de exito</div>
+</div>
+<div class="profile-stat">
+<div class="profile-stat-value" id="profileTotalProfit">$0</div>
+<div class="profile-stat-label">Ganancias totales</div>
+</div>
+<div class="profile-stat">
+<div class="profile-stat-value" id="profileMemberSince">0</div>
+<div class="profile-stat-label">Miembro desde</div>
+</div>
+</div>
+</div>
+<div class="profile-details">
+<h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Informacion Personal</h3>
+<form id="profileForm" class="profile-form">
+<div class="profile-form-group">
+<label class="profile-form-label">Nombre</label>
+<input type="text" id="profileNameInput" class="profile-form-input">
+</div>
+<div class="profile-form-group">
+<label class="profile-form-label">Nombre Completo</label>
+<input type="text" id="profileFullNameInput" class="profile-form-input" placeholder="Opcional">
+</div>
+<div class="profile-form-group">
+<label class="profile-form-label">Nombre de usuario</label>
+<input type="text" id="profileUsername" class="profile-form-input" readonly>
+</div>
+<div class="profile-form-group">
+<label class="profile-form-label">Correo electronico</label>
+<input type="email" id="profileEmailInput" class="profile-form-input" readonly>
+</div>
+<div class="profile-form-group">
+<label class="profile-form-label">Numero de telefono</label>
+<input type="tel" id="profilePhoneInput" class="profile-form-input" placeholder="+1234567890">
+</div>
+<div class="profile-form-actions">
+<button type="button" id="cancelProfileBtn" class="profile-btn profile-btn-secondary">Cancelar</button>
+<button type="submit" class="profile-btn profile-btn-primary">Guardar Cambios</button>
+</div>
+</form>
+
+<div class="mt-6 p-4 rounded-lg" style="background: var(--input-bg);">
+<button onclick="openSwitchAccountModal()" class="w-full profile-btn profile-btn-secondary">
+<i class="fas fa-exchange-alt mr-2"></i>Cambiar de Cuenta
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Раздел Админ-панель -->
+<div id="adminSection" class="admin-section" style="display: none;">
+<div class="glass-card rounded-3xl p-8 mb-8">
+<h2 class="admin-title">Panel de Administracion</h2>
+</div>
+
+<div class="admin-stats">
+<div class="admin-stat-card">
+<div class="admin-stat-value" id="adminTotalUsers">0</div>
+<div class="admin-stat-label">Total de Usuarios</div>
+</div>
+<div class="admin-stat-card">
+<div class="admin-stat-value" id="adminTotalBalance">$0</div>
+<div class="admin-stat-label">Balance Total</div>
+</div>
+<div class="admin-stat-card">
+<div class="admin-stat-value" id="adminTotalInvested">$0</div>
+<div class="admin-stat-label">Total Invertido</div>
+</div>
+<div class="admin-stat-card">
+<div class="admin-stat-value" id="adminTotalProfit">$0</div>
+<div class="admin-stat-label">Ganancias Totales</div>
+</div>
+</div>
+
+<div class="admin-balance-form">
+<h3 class="admin-balance-title">Actualizar Balance de Usuario</h3>
+<form id="adminBalanceForm">
+<div class="admin-balance-form-group">
+<label class="admin-balance-label">Nombre de usuario</label>
+<input type="text" id="adminNickname" class="admin-balance-input" placeholder="Ingrese el nombre de usuario" required>
+</div>
+<div class="admin-balance-form-group">
+<label class="admin-balance-label">Cantidad (ej: 100 = $100)</label>
+<input type="number" step="0.01" id="adminAmount" class="admin-balance-input" placeholder="Ingrese la cantidad" required>
+</div>
+<div class="admin-balance-actions">
+<button type="submit" class="admin-balance-btn">Actualizar Balance</button>
+</div>
+</form>
+</div>
+
+<div class="admin-balance-form">
+<h3 class="admin-balance-title">Gestion de Administradores</h3>
+<button class="admin-assign-btn" onclick="openAssignAdminModal()">
+<i class="fas fa-user-shield mr-2"></i>Asignar Administrador
+</button>
+<button class="admin-remove-btn ml-2" onclick="openRemoveAdminModal()">
+<i class="fas fa-user-times mr-2"></i>Quitar Administrador
+</button>
+</div>
+
+<!-- Массовая рассылка -->
+<div class="admin-balance-form">
+<h3 class="admin-balance-title">📧 Mailing Masivo</h3>
+<form id="bulkEmailForm">
+<div class="admin-balance-form-group">
+<label class="admin-balance-label">Asunto del correo</label>
+<input type="text" id="emailSubject" class="admin-balance-input" placeholder="Ingrese el asunto" required>
+</div>
+<div class="admin-balance-form-group">
+<label class="admin-balance-label">Mensaje (puede usar HTML)</label>
+<textarea id="emailMessage" class="admin-balance-input" rows="5" placeholder="Ingrese el mensaje" required></textarea>
+</div>
+<div class="admin-balance-form-group">
+<label class="admin-balance-label">
+<input type="checkbox" id="sendToAll" style="margin-right: 10px;">
+Enviar a todos los usuarios
+</label>
+</div>
+<div class="admin-balance-form-group" id="specificEmailsGroup" style="display: none;">
+<label class="admin-balance-label">Emails especificos (separados por coma)</label>
+<input type="text" id="specificEmails" class="admin-balance-input" placeholder="email1@example.com, email2@example.com">
+</div>
+<div class="admin-balance-actions">
+<button type="submit" class="admin-balance-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+<i class="fas fa-paper-plane mr-2"></i>Enviar Correo Masivo
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<!-- Кнопка чата поддержки -->
+<div class="support-chat-btn" id="supportChatBtn" onclick="toggleSupportChat()" style="display: none;" title="Chat de soporte">
+<i class="fas fa-headset"></i>
+<span id="supportUnreadBadge" class="unread-badge" style="display: none;">0</span>
+</div>
+
+<!-- Окно чата поддержки -->
+<div class="support-chat-window" id="supportChatWindow">
+<div class="support-chat-header">
+<div class="support-chat-title">
+<span id="chatTitle">Chat de soporte</span>
+<div class="support-chat-status"></div>
+</div>
+<div class="support-chat-close" onclick="toggleSupportChat()">
+<i class="fas fa-times"></i>
+</div>
+</div>
+<div class="support-chat-messages" id="supportChatMessages">
+<!-- Сообщения будут загружены динамически -->
+</div>
+<div class="support-chat-input">
+<div class="chat-input-wrapper">
+<textarea class="chat-input" id="chatInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+</div>
+<input type="file" id="chatAttachment" accept="image/*,application/pdf,.doc,.docx" style="display: none;">
+<button class="chat-attach-btn" onclick="document.getElementById('chatAttachment').click()">
+<i class="fas fa-paperclip"></i>
+</button>
+<button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
+<i class="fas fa-paper-plane"></i>
+</button>
+</div>
+</div>
+
+<!-- Кнопка обращений для админа -->
+<div class="admin-tickets-btn" id="adminTicketsBtn" onclick="toggleAdminTickets()" style="display: none;" title="Tickets de soporte">
+<i class="fas fa-ticket-alt"></i>
+<span id="adminUnreadBadge" class="unread-badge" style="display: none;">0</span>
+</div>
+
+<!-- Окно обращений для админа -->
+<div class="admin-tickets-window" id="adminTicketsWindow">
+<div class="admin-tickets-header">
+<div class="admin-tickets-title">Tickets de Soporte</div>
+<div class="admin-tickets-close" onclick="toggleAdminTickets()">
+<i class="fas fa-times"></i>
+</div>
+</div>
+<div class="admin-tickets-tabs">
+<div class="admin-tickets-tab active" onclick="switchTicketTab('pending')">Nuevos</div>
+<div class="admin-tickets-tab" onclick="switchTicketTab('active')">Activos</div>
+<div class="admin-tickets-tab" onclick="switchTicketTab('closed')">Cerrados</div>
+</div>
+<div class="admin-tickets-content" id="adminTicketsContent">
+<!-- Обращения будут загружены динамически -->
+</div>
+</div>
+
+<!-- Главная кнопка -->
+<div class="main-home-btn" onclick="showSection('home')" title="Inicio">
+<i class="fas fa-home"></i>
+</div>
+
+<!-- Кнопка админ-панели -->
+<div class="main-admin-btn admin-only" id="adminBtn" onclick="showSection('admin')" title="Panel de Administracion" style="display: none;">
+<i class="fas fa-user-shield"></i>
+</div>
+</div>
+
+<script>
+// Глобальные переменные
+let currentUser = null;
+let companies = [];
+let userInvestments = [];
+let priceUpdateInterval = null;
+let currentChat = null;
+let chatMessageInterval = null;
+let selectedAvatar = null;
+let isUserScrolling = false;
+let lastScrollTop = 0;
+let unreadCountInterval = null;
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+initTheme();
+initAnimations();
+initFormHandlers();
+initModalHandlers();
+initNavigation();
+updateUserCount();
+checkExistingUser();
+initActiveUsersAnimation();
+loadCompanies();
+initChatHandlers();
+initAvatarModal();
+initImageModal();
+initAssignAdminModal();
+initRemoveAdminModal();
+initUserInfoModal();
+initSwitchAccountModal();
+restoreChatState();
+startUnreadCountPolling();
+});
+
+// Восстановление состояния чата
+function restoreChatState() {
+const savedChatId = localStorage.getItem('currentChatId');
+const savedChatWindow = localStorage.getItem('chatWindowOpen');
+if (savedChatId && savedChatWindow === 'true' && currentUser) {
+fetch('/support/chats/active')
+.then(response => response.json())
+.then(data => {
+if (data.chats && data.chats.length > 0) {
+const chat = data.chats.find(c => c.id == savedChatId);
+if (chat) {
+currentChat = chat;
+openSupportChat(false); // Открываем без создания нового
+}
+}
+})
+.catch(error => {
+console.error('Error restoring chat:', error);
+});
+}
+}
+
+// Сохранение состояния чата
+function saveChatState() {
+if (currentChat) {
+localStorage.setItem('currentChatId', currentChat.id);
+localStorage.setItem('chatWindowOpen', 'true');
+} else {
+localStorage.removeItem('currentChatId');
+localStorage.setItem('chatWindowOpen', 'false');
+}
+}
+
+// Инициализация темы
+function initTheme() {
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.getElementById('themeSwitch').checked = savedTheme === 'dark';
+}
+
+// Переключение темы
+document.getElementById('themeSwitch').addEventListener('change', function() {
+const theme = this.checked ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', theme);
+localStorage.setItem('theme', theme);
+});
+
+// Инициализация анимаций
+function initAnimations() {
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+entry.target.style.opacity = '1';
+entry.target.style.transform = 'translateY(0)';
+}
+});
+});
+
+document.querySelectorAll('.fade-in-up').forEach(el => {
+el.style.opacity = '0';
+el.style.transform = 'translateY(30px)';
+el.style.transition = 'all 0.8s ease';
+observer.observe(el);
+});
+}
+
+// Инициализация обработчиков модального окна
+function initModalHandlers() {
+const modal = document.getElementById('registerModal');
+const openBtn = document.getElementById('openRegisterModal');
+const closeBtn = document.getElementById('closeRegisterModal');
+
+openBtn.addEventListener('click', function(e) {
+e.preventDefault();
+modal.classList.add('show');
+});
+
+closeBtn.addEventListener('click', function() {
+modal.classList.remove('show');
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+modal.classList.remove('show');
+}
+});
+}
+
+// Инициализация модального окна аватара
+function initAvatarModal() {
+const avatarModal = document.getElementById('avatarModal');
+const closeBtn = document.getElementById('closeAvatarModal');
+const saveBtn = document.getElementById('saveAvatarBtn');
+const avatarOptions = document.querySelectorAll('.avatar-option');
+
+closeBtn.addEventListener('click', function() {
+avatarModal.classList.remove('show');
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === avatarModal) {
+avatarModal.classList.remove('show');
+}
+});
+
+avatarOptions.forEach(option => {
+option.addEventListener('click', function() {
+avatarOptions.forEach(opt => opt.classList.remove('selected'));
+this.classList.add('selected');
+selectedAvatar = this.dataset.avatar;
+});
+});
+
+saveBtn.addEventListener('click', function() {
+if (selectedAvatar) {
+saveAvatar(selectedAvatar);
+avatarModal.classList.remove('show');
+}
+});
+}
+
+// Инициализация модального окна назначения админа
+function initAssignAdminModal() {
+const modal = document.getElementById('assignAdminModal');
+const closeBtn = document.getElementById('closeAssignAdminModal');
+
+closeBtn.addEventListener('click', function() {
+closeAssignAdminModal();
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+closeAssignAdminModal();
+}
+});
+}
+
+// Инициализация модального окна снятия админа
+function initRemoveAdminModal() {
+const modal = document.getElementById('removeAdminModal');
+const closeBtn = document.getElementById('closeRemoveAdminModal');
+
+closeBtn.addEventListener('click', function() {
+closeRemoveAdminModal();
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+closeRemoveAdminModal();
+}
+});
+}
+
+// Инициализация модального окна информации о пользователе
+function initUserInfoModal() {
+const modal = document.getElementById('userInfoModal');
+const closeBtn = document.getElementById('closeUserInfoModal');
+
+closeBtn.addEventListener('click', function() {
+closeUserInfoModal();
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+closeUserInfoModal();
+}
+});
+}
+
+// Инициализация модального окна смены аккаунта
+function initSwitchAccountModal() {
+const modal = document.getElementById('switchAccountModal');
+const closeBtn = document.getElementById('closeSwitchAccountModal');
+const form = document.getElementById('switchAccountForm');
+
+closeBtn.addEventListener('click', function() {
+closeSwitchAccountModal();
+});
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+closeSwitchAccountModal();
+}
+});
+
+form.addEventListener('submit', function(e) {
+e.preventDefault();
+const nickname = document.getElementById('switchNickname').value.trim();
+const password = document.getElementById('switchPassword').value;
+
+fetch('/switch_account', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+nickname: nickname,
+password: password
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('¡Cambio de cuenta exitoso!', 'success');
+currentUser = data.user;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+closeSwitchAccountModal();
+location.reload(); // Перезагружаем страницу для обновления интерфейса
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al cambiar de cuenta', 'error');
+});
+});
+}
+
+// Инициализация модального окна изображений
+function initImageModal() {
+const modal = document.getElementById('imageModal');
+const closeBtn = document.querySelector('.image-modal-close');
+
+closeBtn.addEventListener('click', closeImageModal);
+
+window.addEventListener('click', function(e) {
+if (e.target === modal) {
+closeImageModal();
+}
+});
+}
+
+// Открытие изображения в модальном окне
+function openImageModal(imageSrc) {
+const modal = document.getElementById('imageModal');
+const modalImg = document.getElementById('modalImage');
+modalImg.src = imageSrc;
+modal.classList.add('show');
+}
+
+// Закрытие модального окна изображения
+function closeImageModal() {
+const modal = document.getElementById('imageModal');
+modal.classList.remove('show');
+}
+
+// Открытие модального окна аватара
+function openAvatarModal() {
+document.getElementById('avatarModal').classList.add('show');
+}
+
+// Открытие модального окна смены аккаунта
+function openSwitchAccountModal() {
+document.getElementById('switchAccountModal').classList.add('show');
+document.getElementById('switchNickname').value = '';
+document.getElementById('switchPassword').value = '';
+document.getElementById('switchNickname').focus();
+}
+
+// Закрытие модального окна смены аккаунта
+function closeSwitchAccountModal() {
+document.getElementById('switchAccountModal').classList.remove('show');
+}
+
+// Открытие модального окна назначения админа
+function openAssignAdminModal() {
+document.getElementById('assignAdminModal').classList.add('show');
+document.getElementById('assignAdminUsername').value = '';
+document.getElementById('assignAdminUsername').focus();
+}
+
+// Закрытие модального окна назначения админа
+function closeAssignAdminModal() {
+document.getElementById('assignAdminModal').classList.remove('show');
+}
+
+// Открытие модального окна снятия админа
+function openRemoveAdminModal() {
+document.getElementById('removeAdminModal').classList.add('show');
+document.getElementById('removeAdminUsername').value = '';
+document.getElementById('removeAdminUsername').focus();
+}
+
+// Закрытие модального окна снятия админа
+function closeRemoveAdminModal() {
+document.getElementById('removeAdminModal').classList.remove('show');
+}
+
+// Открытие модального окна информации о пользователе
+function openUserInfoModal(userId) {
+fetch(`/admin/user_info/${userId}`)
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+const user = data.user;
+document.getElementById('userInfoName').innerHTML = `
+ ${user.name || user.nickname}
+ ${user.is_owner ? '<span class="owner-badge">OWNER</span>' : ''}
+`;
+document.getElementById('userInfoNickname').textContent = '@' + user.nickname;
+document.getElementById('userInfoId').textContent = user.id;
+document.getElementById('userInfoEmail').textContent = user.email;
+document.getElementById('userInfoPhone').textContent = user.phone || 'No vinculado';
+document.getElementById('userInfoRegDate').textContent = new Date(user.registration_date).toLocaleDateString();
+document.getElementById('userInfoLastLogin').textContent = user.last_login ? new Date(user.last_login).toLocaleString() : 'Nunca';
+document.getElementById('userInfoBalance').textContent = '$' + user.balance.toFixed(2);
+document.getElementById('userInfoTotalInvested').textContent = '$' + user.total_invested.toFixed(2);
+document.getElementById('userInfoTotalProfit').textContent = '$' + user.total_profit.toFixed(2);
+document.getElementById('userInfoInvestmentsCount').textContent = user.investments_count;
+document.getElementById('userInfoSuccessRate').textContent = user.investments_count > 0
+? Math.round((user.successful_investments / user.investments_count) * 100) + '%'
+: '0%';
+
+// Обновляем аватар
+const avatarImg = document.getElementById('userInfoAvatarImg');
+const avatarText = document.getElementById('userInfoAvatarText');
+if (user.avatar_url && user.avatar_url !== 'null' && user.avatar_url !== '') {
+if (user.avatar_url.startsWith('avatar')) {
+const avatarEmojis = {
+'avatar1': '🚀', 'avatar2': '💎', 'avatar3': '🌟', 'avatar4': '🔥', 'avatar5': '⚡',
+'avatar6': '👑', 'avatar7': '💰', 'avatar8': '🎯', 'avatar9': '🏆', 'avatar10': '🎨'
+};
+avatarImg.style.display = 'none';
+avatarText.style.display = 'block';
+avatarText.textContent = avatarEmojis[user.avatar_url] || '👤';
+} else {
+avatarImg.src = user.avatar_url;
+avatarImg.style.display = 'block';
+avatarText.style.display = 'none';
+}
+} else {
+avatarImg.style.display = 'none';
+avatarText.style.display = 'block';
+avatarText.textContent = user.nickname.charAt(0).toUpperCase();
+}
+
+// Обновляем роль
+const roleElement = document.getElementById('userInfoRole');
+if (user.is_owner) {
+roleElement.textContent = 'OWNER';
+roleElement.className = 'user-info-role owner';
+} else if (user.is_admin) {
+roleElement.textContent = 'ADMIN';
+roleElement.className = 'user-info-role admin';
+} else {
+roleElement.textContent = 'USER';
+roleElement.className = 'user-info-role user';
+}
+
+document.getElementById('userInfoModal').classList.add('show');
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al cargar la informacion del usuario', 'error');
+});
+}
+
+// Закрытие модального окна информации о пользователе
+function closeUserInfoModal() {
+document.getElementById('userInfoModal').classList.remove('show');
+}
+
+// Сохранение аватара
+function saveAvatar(avatarUrl) {
+fetch('/set_avatar', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+avatar_url: avatarUrl
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('Avatar actualizado correctamente', 'success');
+currentUser.avatar_url = data.avatar_url;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+updateAvatarDisplay();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al actualizar el avatar', 'error');
+});
+}
+
+// Подтверждение назначения админа
+function confirmAssignAdmin() {
+const username = document.getElementById('assignAdminUsername').value.trim();
+if (!username) {
+showNotification('Ingrese el nombre de usuario', 'error');
+return;
+}
+
+fetch('/admin/assign_admin', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+nickname: username
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`${username} ha sido asignado como administrador`, 'success');
+closeAssignAdminModal();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al asignar administrador', 'error');
+});
+}
+
+// Подтверждение снятия админа
+function confirmRemoveAdmin() {
+const username = document.getElementById('removeAdminUsername').value.trim();
+if (!username) {
+showNotification('Ingrese el nombre de usuario', 'error');
+return;
+}
+
+fetch('/admin/remove_admin', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+nickname: username
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`${username} ha sido removido de administradores`, 'success');
+closeRemoveAdminModal();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al quitar administrador', 'error');
+});
+}
+
+// Инициализация навигации
+function initNavigation() {
+const navItems = document.querySelectorAll('.nav-item');
+const sections = {
+home: document.getElementById('homeSection'),
+companies: document.getElementById('companiesSection'),
+portfolio: document.getElementById('portfolioSection'),
+balance: document.getElementById('balanceSection'),
+statistics: document.getElementById('statisticsSection'),
+profile: document.getElementById('profileSection'),
+admin: document.getElementById('adminSection')
+};
+
+showSection('home');
+
+navItems.forEach(item => {
+item.addEventListener('click', function() {
+const sectionName = this.getAttribute('data-section');
+
+navItems.forEach(navItem => navItem.classList.remove('active'));
+this.classList.add('active');
+
+showSection(sectionName);
+});
+});
+}
+
+function showSection(sectionName) {
+Object.keys({
+home: 'homeSection',
+companies: 'companiesSection',
+portfolio: 'portfolioSection',
+balance: 'balanceSection',
+statistics: 'statisticsSection',
+profile: 'profileSection',
+admin: 'adminSection'
+}).forEach(key => {
+document.getElementById(key + 'Section').style.display = 'none';
+});
+
+document.getElementById(sectionName + 'Section').style.display = 'block';
+
+if (sectionName === 'companies') {
+loadCompanies();
+}
+
+if (sectionName === 'portfolio') {
+loadUserInvestments();
+}
+
+if (sectionName === 'balance') {
+loadUserInvestments();
+renderBalanceInvestments();
+}
+
+if (sectionName === 'profile' && currentUser) {
+loadProfileData();
+}
+
+if (sectionName === 'admin' && currentUser && currentUser.is_admin) {
+loadAdminData();
+}
+}
+
+// Инициализация обработчиков формы
+function initFormHandlers() {
+const registrationForm = document.getElementById('registrationForm');
+const nameInput = document.getElementById('name');
+const usernameInput = document.getElementById('username');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+
+nameInput.addEventListener('input', function() {
+const progress = Math.min((this.value.length / 2) * 100, 100);
+document.getElementById('nameProgress').style.width = progress + '%';
+});
+
+usernameInput.addEventListener('input', function() {
+const progress = Math.min((this.value.length / 4) * 100, 100);
+document.getElementById('usernameProgress').style.width = progress + '%';
+});
+
+emailInput.addEventListener('input', function() {
+const progress = Math.min((this.value.length / 10) * 100, 100);
+document.getElementById('emailProgress').style.width = progress + '%';
+});
+
+passwordInput.addEventListener('input', function() {
+const password = this.value;
+const bars = document.querySelectorAll('.strength-bar');
+bars.forEach(bar => bar.classList.remove('active', 'weak', 'medium', 'strong'));
+
+if (password.length > 0) {
+let strength = 0;
+if (password.length >= 7) strength++;
+if (password.length >= 10) strength++;
+if (/[A-Z]/.test(password) && /[0-9]/.test(password)) strength++;
+if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+const strengthClass = strength <= 1 ? 'weak' : strength <= 2 ? 'medium' : 'strong';
+
+for (let i = 0; i < strength; i++) {
+bars[i].classList.add('active', strengthClass);
+}
+}
+});
+
+togglePasswordBtn.addEventListener('click', function() {
+const type = passwordInput.type === 'password' ? 'text' : 'password';
+passwordInput.type = type;
+this.querySelector('i').classList.toggle('fa-eye');
+this.querySelector('i').classList.toggle('fa-eye-slash');
+});
+
+registrationForm.querySelector('.submit-btn').addEventListener('click', function(e) {
+const ripple = document.createElement('span');
+ripple.classList.add('ripple');
+
+const rect = this.getBoundingClientRect();
+const size = Math.max(rect.width, rect.height);
+const x = e.clientX - rect.left - size / 2;
+const y = e.clientY - rect.top - size / 2;
+
+ripple.style.width = ripple.style.height = size + 'px';
+ripple.style.left = x + 'px';
+ripple.style.top = y + 'px';
+
+this.appendChild(ripple);
+
+setTimeout(() => ripple.remove(), 600);
+});
+
+registrationForm.addEventListener('submit', function(e) {
+e.preventDefault();
+
+const name = nameInput.value.trim();
+const username = usernameInput.value.trim();
+const email = emailInput.value.trim();
+const password = passwordInput.value;
+const termsAccepted = document.getElementById('terms').checked;
+
+if (name.length < 2) {
+showNotification('El nombre debe tener al menos 2 caracteres', 'error');
+return;
+}
+
+if (username.length < 4) {
+showNotification('El nombre de usuario debe tener al menos 4 caracteres', 'error');
+return;
+}
+
+if (!email || !email.includes('@')) {
+showNotification('Por favor, introduce un correo electronico valido', 'error');
+return;
+}
+
+if (password.length < 7) {
+showNotification('La contrasena debe tener al menos 7 caracteres', 'error');
+return;
+}
+
+if (!termsAccepted) {
+showNotification('Debes aceptar los terminos y condiciones', 'error');
+return;
+}
+
+fetch('/register', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+name: name,
+nickname: username,
+email: email,
+password: password
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('¡Registro exitoso! Bienvenido a Clean.Invest', 'success');
+currentUser = data.user;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+document.getElementById('registerModal').classList.remove('show');
+
+setTimeout(() => {
+showMainPage(currentUser);
+}, 1500);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al registrar el usuario', 'error');
+});
+});
+
+const loginFormElement = document.getElementById('loginFormElement');
+const loginNicknameInput = document.getElementById('loginNickname');
+const loginPasswordInput = document.getElementById('loginPassword');
+const toggleLoginPasswordBtn = document.getElementById('toggleLoginPasswordBtn');
+
+toggleLoginPasswordBtn.addEventListener('click', function() {
+const type = loginPasswordInput.type === 'password' ? 'text' : 'password';
+loginPasswordInput.type = type;
+this.querySelector('i').classList.toggle('fa-eye');
+this.querySelector('i').classList.toggle('fa-eye-slash');
+});
+
+loginFormElement.querySelector('.submit-btn').addEventListener('click', function(e) {
+const ripple = document.createElement('span');
+ripple.classList.add('ripple');
+
+const rect = this.getBoundingClientRect();
+const size = Math.max(rect.width, rect.height);
+const x = e.clientX - rect.left - size / 2;
+const y = e.clientY - rect.top - size / 2;
+
+ripple.style.width = ripple.style.height = size + 'px';
+ripple.style.left = x + 'px';
+ripple.style.top = y + 'px';
+
+this.appendChild(ripple);
+
+setTimeout(() => ripple.remove(), 600);
+});
+
+loginFormElement.addEventListener('submit', function(e) {
+e.preventDefault();
+
+const nickname = loginNicknameInput.value.trim();
+const password = loginPasswordInput.value;
+
+if (!nickname) {
+showNotification('Por favor, introduce tu nombre de usuario', 'error');
+return;
+}
+
+if (!password) {
+showNotification('Por favor, introduce tu contrasena', 'error');
+return;
+}
+
+fetch('/login', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+nickname: nickname,
+password: password
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('¡Inicio de sesion exitoso! Bienvenido de nuevo', 'success');
+currentUser = data.user;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+setTimeout(() => {
+showMainPage(currentUser);
+}, 1500);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al iniciar sesion', 'error');
+});
+});
+
+const profileForm = document.getElementById('profileForm');
+const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+
+profileForm.addEventListener('submit', function(e) {
+e.preventDefault();
+
+const name = document.getElementById('profileNameInput').value.trim();
+const full_name = document.getElementById('profileFullNameInput').value.trim();
+const phone = document.getElementById('profilePhoneInput').value.trim();
+
+fetch('/profile', {
+method: 'PUT',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+name: name,
+full_name: full_name,
+phone: phone
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('Perfil actualizado correctamente', 'success');
+currentUser = data.user;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+loadProfileData();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al actualizar el perfil', 'error');
+});
+});
+
+cancelProfileBtn.addEventListener('click', function() {
+loadProfileData();
+});
+
+const adminBalanceForm = document.getElementById('adminBalanceForm');
+
+adminBalanceForm.addEventListener('submit', function(e) {
+e.preventDefault();
+
+const nickname = document.getElementById('adminNickname').value.trim();
+const amount = parseFloat(document.getElementById('adminAmount').value);
+
+fetch('/admin/update_balance', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+nickname: nickname,
+amount: amount
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`Balance actualizado correctamente para ${data.nickname}. Nuevo balance: $${data.new_balance}`, 'success');
+document.getElementById('adminNickname').value = '';
+document.getElementById('adminAmount').value = '';
+loadAdminData();
+if (currentUser && currentUser.nickname === data.nickname) {
+currentUser.balance = data.new_balance;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+updateBalanceDisplay();
+}
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al actualizar el balance', 'error');
+});
+});
+}
+
+// Инициализация обработчиков чата
+function initChatHandlers() {
+const chatInput = document.getElementById('chatInput');
+const chatAttachment = document.getElementById('chatAttachment');
+const chatMessages = document.getElementById('supportChatMessages');
+
+// Обработка скролла в чате
+chatMessages.addEventListener('scroll', function() {
+const scrollTop = this.scrollTop;
+const scrollHeight = this.scrollHeight;
+const clientHeight = this.clientHeight;
+
+// Определяем, скроллит ли пользователь
+if (scrollTop < lastScrollTop) {
+isUserScrolling = true;
+} else if (scrollTop + clientHeight >= scrollHeight - 10) {
+isUserScrolling = false;
+}
+
+lastScrollTop = scrollTop;
+
+// Сбрасываем флаг через 3 секунды после окончания скролла
+clearTimeout(window.scrollTimeout);
+window.scrollTimeout = setTimeout(() => {
+isUserScrolling = false;
+}, 3000);
+});
+
+chatInput.addEventListener('keypress', function(e) {
+if (e.key === 'Enter' && !e.shiftKey) {
+e.preventDefault();
+sendChatMessage();
+}
+});
+
+chatAttachment.addEventListener('change', function(e) {
+const file = e.target.files[0];
+if (file) {
+// Валидация файла
+const maxSize = 10 * 1024 * 1024; // 10MB
+const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+if (file.size > maxSize) {
+showNotification('El archivo es demasiado grande. Maximo 10MB', 'error');
+e.target.value = '';
+return;
+}
+
+if (!allowedTypes.includes(file.type)) {
+showNotification('Tipo de archivo no permitido', 'error');
+e.target.value = '';
+return;
+}
+
+sendChatMessage(file);
+}
+});
+}
+
+// Загрузка компаний
+function loadCompanies() {
+fetch('/companies')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+return;
+}
+
+companies = data.companies;
+renderCompanies();
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Отображение компаний
+function renderCompanies() {
+const companiesGrid = document.getElementById('companiesGrid');
+if (!companiesGrid) return;
+
+companiesGrid.innerHTML = '';
+
+if (companies && companies.length > 0) {
+companies.forEach(company => {
+const companyCard = createCompanyCard(company);
+companiesGrid.appendChild(companyCard);
+});
+}
+}
+
+// Создание карточки компании
+function createCompanyCard(company) {
+const card = document.createElement('div');
+card.className = 'company-card';
+
+let iconColor = 'linear-gradient(135deg, #667eea, #764ba2)';
+
+if (company.category === 'Energia renovable' || company.category === 'Energia') {
+iconColor = 'linear-gradient(135deg, #10b981, #059669)';
+} else if (company.category === 'Inteligencia artificial' || company.category === 'Tecnologia' || company.category === 'Ciberseguridad') {
+iconColor = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+} else if (company.category === 'Aeroespacial' || company.category === 'Turismo') {
+iconColor = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+} else if (company.category === 'Biotecnologia' || company.category === 'Salud') {
+iconColor = 'linear-gradient(135deg, #ef4444, #dc2626)';
+} else if (company.category === 'Medio ambiente') {
+iconColor = 'linear-gradient(135deg, #06b6d4, #0891b2)';
+} else if (company.category === 'Finanzas') {
+iconColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+}
+
+const priceChange = (Math.random() * 10 - 5).toFixed(2);
+const isPositive = parseFloat(priceChange) >= 0;
+
+card.innerHTML = `
+<div class="company-header">
+<div class="company-icon" style="background: ${iconColor};">
+<i class="fas ${company.icon || 'fa-chart-line'}"></i>
+</div>
+<div class="company-info">
+<div class="company-name">${company.name}</div>
+<div class="company-symbol">${company.symbol}</div>
+</div>
+</div>
+<div class="company-category">${company.category}</div>
+<div class="company-description">${company.description}</div>
+<div class="company-price">
+<div class="price-value">$${company.base_price.toFixed(2)}</div>
+<div class="price-change ${isPositive ? 'positive' : 'negative'}">
+ ${isPositive ? '+' : ''}${priceChange}%
+</div>
+</div>
+<form class="buy-form" onsubmit="buyStock(event, ${company.id})">
+<input type="number" class="buy-input" min="1" value="1" required>
+<button type="submit" class="buy-btn">Comprar</button>
+</form>
+`;
+
+return card;
+}
+
+// Покупка акций
+function buyStock(event, companyId) {
+event.preventDefault();
+const shares = parseInt(event.target.querySelector('.buy-input').value);
+const company = companies.find(c => c.id === companyId);
+const totalCost = company.base_price * shares;
+
+if (currentUser.balance < totalCost) {
+showNotification('Saldo insuficiente', 'error');
+return;
+}
+
+fetch('/buy', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+company_id: companyId,
+shares: shares
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`¡Has comprado ${shares} acciones de ${data.company.name} por $${data.total_cost.toFixed(2)}!`, 'success');
+currentUser.balance = data.balance;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+updateBalanceDisplay();
+event.target.querySelector('.buy-input').value = 1;
+loadUserInvestments();
+startPriceUpdates();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al comprar las acciones', 'error');
+});
+}
+
+// Загрузка инвестиций пользователя
+function loadUserInvestments() {
+fetch('/investments')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+return;
+}
+
+userInvestments = data.investments;
+renderPortfolio();
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Отображение портфеля
+function renderPortfolio() {
+const portfolioGrid = document.getElementById('portfolioGrid');
+if (!portfolioGrid) return;
+
+portfolioGrid.innerHTML = '';
+
+if (userInvestments && userInvestments.length > 0) {
+userInvestments.forEach(investment => {
+const portfolioCard = createPortfolioCard(investment);
+portfolioGrid.appendChild(portfolioCard);
+});
+} else {
+const noInvestments = document.createElement('div');
+noInvestments.className = 'text-center py-8';
+noInvestments.innerHTML = `
+<p style="color: var(--text-secondary);">No tienes inversiones activas</p>
+<button class="deposit-btn mt-4" onclick="showSection('companies')">
+<i class="fas fa-plus-circle mr-2"></i>Explorar Empresas
+</button>
+`;
+portfolioGrid.appendChild(noInvestments);
+}
+}
+
+// Создание карточки портфеля
+function createPortfolioCard(investment) {
+const card = document.createElement('div');
+card.className = 'portfolio-card';
+card.id = `investment-${investment.id}`;
+
+const profit = investment.profit;
+const profitPercentage = investment.profit_percentage;
+const isPositive = profit >= 0;
+
+let iconColor = 'linear-gradient(135deg, #667eea, #764ba2)';
+
+if (investment.company.category === 'Energia renovable' || investment.company.category === 'Energia') {
+iconColor = 'linear-gradient(135deg, #10b981, #059669)';
+} else if (investment.company.category === 'Inteligencia artificial' || investment.company.category === 'Tecnologia' || investment.company.category === 'Ciberseguridad') {
+iconColor = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+} else if (investment.company.category === 'Aeroespacial' || investment.company.category === 'Turismo') {
+iconColor = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+} else if (investment.company.category === 'Biotecnologia' || investment.company.category === 'Salud') {
+iconColor = 'linear-gradient(135deg, #ef4444, #dc2626)';
+} else if (investment.company.category === 'Medio ambiente') {
+iconColor = 'linear-gradient(135deg, #06b6d4, #0891b2)';
+} else if (investment.company.category === 'Finanzas') {
+iconColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+}
+
+card.innerHTML = `
+<div class="portfolio-header">
+<div class="portfolio-icon" style="background: ${iconColor};">
+<i class="fas ${investment.company.icon || 'fa-chart-line'}"></i>
+</div>
+<div class="portfolio-info">
+<div class="portfolio-name">${investment.company.name}</div>
+<div class="portfolio-symbol">${investment.company.symbol}</div>
+</div>
+</div>
+<div class="portfolio-stats">
+<div class="portfolio-stat">
+<div class="portfolio-stat-value">${investment.shares}</div>
+<div class="portfolio-stat-label">Acciones</div>
+</div>
+<div class="portfolio-stat">
+<div class="portfolio-stat-value">$${investment.purchase_price.toFixed(2)}</div>
+<div class="portfolio-stat-label">Precio compra</div>
+</div>
+<div class="portfolio-stat">
+<div class="portfolio-stat-value">$${investment.current_price.toFixed(2)}</div>
+<div class="portfolio-stat-label">Precio actual</div>
+</div>
+<div class="portfolio-stat">
+<div class="portfolio-stat-value">$${(investment.current_price * investment.shares).toFixed(2)}</div>
+<div class="portfolio-stat-label">Valor total</div>
+</div>
+</div>
+<div class="portfolio-profit">
+<div class="profit-value ${isPositive ? 'positive' : 'negative'}">
+ ${isPositive ? '+' : ''}$${Math.abs(profit).toFixed(2)}
+</div>
+<div class="profit-percentage ${isPositive ? 'positive' : 'negative'}">
+ ${isPositive ? '+' : ''}${profitPercentage.toFixed(2)}%
+</div>
+</div>
+<div class="portfolio-actions">
+<form class="sell-form" onsubmit="sellStock(event, ${investment.id})">
+<input type="number" class="sell-input" min="1" max="${investment.shares}" value="1" required>
+<button type="submit" class="sell-btn">Vender</button>
+</form>
+</div>
+`;
+
+return card;
+}
+
+// Продажа акций
+function sellStock(event, investmentId) {
+event.preventDefault();
+const shares = parseInt(event.target.querySelector('.sell-input').value);
+const investment = userInvestments.find(i => i.id === investmentId);
+
+fetch('/sell', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+investment_id: investmentId,
+shares: shares
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`¡Has vendido ${shares} acciones de ${data.company.name} por $${data.total_revenue.toFixed(2)}! Ganancia: $${data.profit.toFixed(2)}`, 'success');
+currentUser.balance = data.balance;
+localStorage.setItem('currentUser', JSON.stringify(currentUser));
+updateBalanceDisplay();
+const card = document.getElementById(`investment-${investmentId}`);
+if (card) {
+card.style.transition = 'all 0.3s ease';
+card.style.opacity = '0';
+card.style.transform = 'scale(0.8)';
+setTimeout(() => {
+card.remove();
+}, 300);
+}
+loadUserInvestments();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al vender las acciones', 'error');
+});
+}
+
+// Отображение инвестиций в балансе
+function renderBalanceInvestments() {
+const balanceInvestments = document.getElementById('balanceInvestments');
+if (!balanceInvestments) return;
+
+balanceInvestments.innerHTML = '';
+
+if (userInvestments && userInvestments.length > 0) {
+userInvestments.forEach(investment => {
+const investmentItem = createBalanceInvestmentItem(investment);
+balanceInvestments.appendChild(investmentItem);
+});
+} else {
+const noInvestments = document.createElement('div');
+noInvestments.className = 'text-center py-8';
+noInvestments.innerHTML = `
+<p style="color: var(--text-secondary);">No tienes acciones compradas</p>
+<button class="deposit-btn mt-4" onclick="showSection('companies')">
+<i class="fas fa-plus-circle mr-2"></i>Explorar Empresas
+</button>
+`;
+balanceInvestments.appendChild(noInvestments);
+}
+}
+
+// Создание элемента инвестиции для баланса
+function createBalanceInvestmentItem(investment) {
+const item = document.createElement('div');
+item.className = 'balance-investment-item';
+item.id = `balance-investment-${investment.id}`;
+
+const profit = investment.profit;
+const profitPercentage = investment.profit_percentage;
+const isPositive = profit >= 0;
+
+let iconColor = 'linear-gradient(135deg, #667eea, #764ba2)';
+
+if (investment.company.category === 'Energia renovable' || investment.company.category === 'Energia') {
+iconColor = 'linear-gradient(135deg, #10b981, #059669)';
+} else if (investment.company.category === 'Inteligencia artificial' || investment.company.category === 'Tecnologia' || investment.company.category === 'Ciberseguridad') {
+iconColor = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+} else if (investment.company.category === 'Aeroespacial' || investment.company.category === 'Turismo') {
+iconColor = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+} else if (investment.company.category === 'Biotecnologia' || investment.company.category === 'Salud') {
+iconColor = 'linear-gradient(135deg, #ef4444, #dc2626)';
+} else if (investment.company.category === 'Medio ambiente') {
+iconColor = 'linear-gradient(135deg, #06b6d4, #0891b2)';
+} else if (investment.company.category === 'Finanzas') {
+iconColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+}
+
+item.innerHTML = `
+<div class="balance-investment-icon" style="background: ${iconColor};">
+<i class="fas ${investment.company.icon || 'fa-chart-line'}"></i>
+</div>
+<div class="balance-investment-info">
+<div class="balance-investment-name">${investment.company.name}</div>
+<div class="balance-investment-price">$${investment.current_price.toFixed(2)} × ${investment.shares} = $${(investment.current_price * investment.shares).toFixed(2)}</div>
+</div>
+<div class="balance-investment-profit">
+<div class="balance-investment-profit-value ${isPositive ? 'positive' : 'negative'}">
+ ${isPositive ? '+' : ''}$${Math.abs(profit).toFixed(2)}
+</div>
+<div class="balance-investment-profit-percentage ${isPositive ? 'positive' : 'negative'}">
+ ${isPositive ? '+' : ''}${profitPercentage.toFixed(2)}%
+</div>
+</div>
+<form class="sell-form" onsubmit="sellStock(event, ${investment.id})">
+<input type="number" class="sell-input" min="1" max="${investment.shares}" value="1" required>
+<button type="submit" class="balance-sell-btn">Vender</button>
+</form>
+`;
+
+return item;
+}
+
+// Обновление счетчика пользователей
+function updateUserCount() {
+let users = JSON.parse(localStorage.getItem('users') || '[]');
+const targetCount = users.length + 8747;
+let currentCount = 0;
+const increment = Math.ceil(targetCount / 100);
+
+const counter = setInterval(() => {
+currentCount += increment;
+if (currentCount >= targetCount) {
+currentCount = targetCount;
+clearInterval(counter);
+}
+const element = document.getElementById('userCountDisplay');
+if (element) element.textContent = currentCount.toLocaleString();
+}, 20);
+}
+
+// Анимация активных пользователей
+function initActiveUsersAnimation() {
+const activeUsersElement = document.getElementById('activeUsersCount');
+if (!activeUsersElement) return;
+
+let activeUsers = 1203;
+
+setInterval(() => {
+const change = Math.floor(Math.random() * 16) - 5;
+activeUsers += change;
+
+if (activeUsers < 1100) activeUsers = 1100;
+
+activeUsersElement.style.transition = 'all 0.5s ease';
+activeUsersElement.textContent = activeUsers.toLocaleString();
+}, Math.random() * 5000 + 5000);
+}
+
+// Проверка существующего пользователя
+function checkExistingUser() {
+const savedUser = localStorage.getItem('currentUser');
+if (savedUser) {
+currentUser = JSON.parse(savedUser);
+showMainPage(currentUser);
+}
+}
+
+// Показать главное меню
+function showMainPage(user) {
+document.getElementById('loginPage').classList.add('hidden');
+document.getElementById('registerModal').classList.remove('show');
+document.getElementById('mainPage').classList.remove('hidden');
+
+document.getElementById('navUsername').innerHTML = `
+ ${user.nickname}
+ ${user.is_owner ? '<span class="owner-badge">OWNER</span>' : ''}
+`;
+document.getElementById('navEmail').textContent = user.email;
+
+if (user.is_admin) {
+document.getElementById('adminBtn').style.display = 'flex';
+document.getElementById('adminTicketsBtn').style.display = 'flex';
+document.getElementById('supportChatBtn').style.display = 'none';
+} else {
+document.getElementById('adminBtn').style.display = 'none';
+document.getElementById('adminTicketsBtn').style.display = 'none';
+document.getElementById('supportChatBtn').style.display = 'flex';
+}
+
+updateAvatarDisplay();
+updateBalanceDisplay();
+loadUserInvestments();
+startPriceUpdates();
+}
+
+// Обновление отображения баланса
+function updateBalanceDisplay() {
+document.getElementById('userBalance').textContent = `$${currentUser.balance.toFixed(2)}`;
+document.getElementById('balanceAmount').textContent = `$${currentUser.balance.toFixed(2)}`;
+}
+
+// Обновление отображения аватара
+function updateAvatarDisplay() {
+if (!currentUser) return;
+
+const navAvatarImg = document.getElementById('navAvatarImg');
+const navAvatarText = document.getElementById('navAvatarText');
+const profileAvatarImg = document.getElementById('profileAvatarImg');
+const profileAvatarText = document.getElementById('profileAvatarText');
+
+if (currentUser.avatar_url && currentUser.avatar_url !== 'null' && currentUser.avatar_url !== '') {
+// Если это кастомный аватар
+if (currentUser.avatar_url.startsWith('avatar')) {
+// Показываем эмодзи
+const avatarEmojis = {
+'avatar1': '🚀',
+'avatar2': '💎',
+'avatar3': '🌟',
+'avatar4': '🔥',
+'avatar5': '⚡',
+'avatar6': '👑',
+'avatar7': '💰',
+'avatar8': '🎯',
+'avatar9': '🏆',
+'avatar10': '🎨'
+};
+
+const emoji = avatarEmojis[currentUser.avatar_url] || '👤';
+navAvatarImg.style.display = 'none';
+navAvatarText.style.display = 'block';
+navAvatarText.textContent = emoji;
+
+profileAvatarImg.style.display = 'none';
+profileAvatarText.style.display = 'block';
+profileAvatarText.textContent = emoji;
+} else {
+// Показываем изображение
+navAvatarImg.src = currentUser.avatar_url;
+navAvatarImg.style.display = 'block';
+navAvatarText.style.display = 'none';
+
+profileAvatarImg.src = currentUser.avatar_url;
+profileAvatarImg.style.display = 'block';
+profileAvatarText.style.display = 'none';
+}
+} else {
+navAvatarImg.style.display = 'none';
+navAvatarText.style.display = 'block';
+navAvatarText.textContent = currentUser.nickname.charAt(0).toUpperCase();
+
+profileAvatarImg.style.display = 'none';
+profileAvatarText.style.display = 'block';
+profileAvatarText.textContent = currentUser.nickname.charAt(0).toUpperCase();
+}
+
+// Обновляем бейджи owner
+const navOwnerBadge = document.getElementById('navOwnerBadge');
+const profileOwnerBadge = document.getElementById('profileOwnerBadge');
+const userInfoRoleBadge = document.getElementById('userInfoRoleBadge');
+
+if (currentUser.is_owner) {
+if (navOwnerBadge) navOwnerBadge.style.display = 'inline-block';
+if (profileOwnerBadge) profileOwnerBadge.style.display = 'inline-block';
+if (userInfoRoleBadge) userInfoRoleBadge.style.display = 'inline-block';
+} else {
+if (navOwnerBadge) navOwnerBadge.style.display = 'none';
+if (profileOwnerBadge) profileOwnerBadge.style.display = 'none';
+if (userInfoRoleBadge) userInfoRoleBadge.style.display = 'none';
+}
+}
+
+// Загрузка данных профиля
+function loadProfileData() {
+fetch('/profile')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+return;
+}
+
+const user = data.user;
+
+document.getElementById('profileName').innerHTML = `
+ ${user.name || user.nickname}
+ ${user.is_owner ? '<span class="owner-badge">OWNER</span>' : ''}
+`;
+document.getElementById('profileEmail').textContent = user.email;
+document.getElementById('profileNameInput').value = user.name || '';
+document.getElementById('profileFullNameInput').value = user.full_name || '';
+document.getElementById('profileUsername').value = user.nickname;
+document.getElementById('profileEmailInput').value = user.email;
+document.getElementById('profilePhoneInput').value = user.phone || '';
+
+document.getElementById('profileInvestmentsCount').textContent = user.investments_count || 0;
+document.getElementById('profileSuccessRate').textContent = user.investments_count > 0
+? `${Math.round((user.successful_investments / user.investments_count) * 100)}%`
+: '0%';
+document.getElementById('profileTotalProfit').textContent = `$${(user.total_profit || 0).toFixed(2)}`;
+
+if (user.registration_date) {
+const regDate = new Date(user.registration_date);
+document.getElementById('profileMemberSince').textContent = regDate.toLocaleDateString();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Загрузка данных админ-панели
+function loadAdminData() {
+fetch('/admin/stats')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+return;
+}
+
+document.getElementById('adminTotalUsers').textContent = data.total_users;
+document.getElementById('adminTotalBalance').textContent = `$${data.total_balance.toFixed(2)}`;
+document.getElementById('adminTotalInvested').textContent = `$${data.total_invested.toFixed(2)}`;
+document.getElementById('adminTotalProfit').textContent = `$${data.total_profit.toFixed(2)}`;
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Выход
+function logout() {
+fetch('/logout', {
+method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+localStorage.removeItem('currentUser');
+localStorage.removeItem('currentChatId');
+localStorage.setItem('chatWindowOpen', 'false');
+currentUser = null;
+currentChat = null;
+document.getElementById('mainPage').classList.add('hidden');
+document.getElementById('loginPage').classList.remove('hidden');
+document.getElementById('loginFormElement').reset();
+document.getElementById('registrationForm').reset();
+showNotification('Has cerrado sesion correctamente', 'success');
+stopPriceUpdates();
+closeSupportChat();
+closeAdminTickets();
+hideFloatingButtons();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al cerrar sesion', 'error');
+});
+}
+
+// Скрыть плавающие кнопки при выходе
+function hideFloatingButtons() {
+document.getElementById('supportChatBtn').style.display = 'none';
+document.getElementById('adminTicketsBtn').style.display = 'none';
+document.getElementById('adminBtn').style.display = 'none';
+document.getElementById('mainHomeBtn').style.display = 'none';
+}
+
+// Показать уведомление о пополнении
+function showDepositNotification() {
+showNotification('Contacta con el chat de soporte para recargar. Por seguridad de los usuarios de CleanInvest contra robos y perdidas de fondos, la recarga se realiza a traves del chat de soporte.', 'info');
+}
+
+// Улучшенная система уведомлений
+function showNotification(message, type = 'info', title = null) {
+let notificationContainer = document.querySelector('.notification-container');
+if (!notificationContainer) {
+notificationContainer = document.createElement('div');
+notificationContainer.className = 'notification-container';
+document.body.appendChild(notificationContainer);
+}
+
+const notification = document.createElement('div');
+notification.className = `notification ${type}`;
+
+const iconContainer = document.createElement('div');
+iconContainer.className = 'notification-icon-container';
+
+const icon = document.createElement('div');
+icon.className = 'notification-icon';
+
+switch(type) {
+case 'success':
+icon.innerHTML = '<i class="fas fa-check"></i>';
+break;
+case 'error':
+icon.innerHTML = '<i class="fas fa-times"></i>';
+break;
+case 'warning':
+icon.innerHTML = '<i class="fas fa-exclamation"></i>';
+break;
+case 'info':
+default:
+icon.innerHTML = '<i class="fas fa-info"></i>';
+break;
+}
+
+iconContainer.appendChild(icon);
+
+const content = document.createElement('div');
+content.className = 'notification-content';
+
+const notificationTitle = document.createElement('div');
+notificationTitle.className = 'notification-title';
+notificationTitle.textContent = title || getDefaultTitle(type);
+
+const notificationMessage = document.createElement('div');
+notificationMessage.className = 'notification-message';
+notificationMessage.textContent = message;
+
+const closeButton = document.createElement('div');
+closeButton.className = 'notification-close';
+closeButton.innerHTML = '<i class="fas fa-times"></i>';
+closeButton.addEventListener('click', function() {
+closeNotification(notification);
+});
+
+const progressContainer = document.createElement('div');
+progressContainer.className = 'notification-progress';
+
+const progressBar = document.createElement('div');
+progressBar.className = 'notification-progress-bar';
+progressBar.style.width = '100%';
+
+progressContainer.appendChild(progressBar);
+
+content.appendChild(notificationTitle);
+content.appendChild(notificationMessage);
+content.appendChild(closeButton);
+
+notification.appendChild(iconContainer);
+notification.appendChild(content);
+notification.appendChild(progressContainer);
+
+notificationContainer.appendChild(notification);
+
+setTimeout(() => {
+notification.classList.add('show');
+}, 10);
+
+let progressWidth = 100;
+const progressInterval = setInterval(() => {
+progressWidth -= 0.5;
+progressBar.style.width = progressWidth + '%';
+
+if (progressWidth <= 0) {
+clearInterval(progressInterval);
+closeNotification(notification);
+}
+}, 50);
+
+notification.dataset.intervalId = progressInterval;
+
+return notification;
+}
+
+function getDefaultTitle(type) {
+switch(type) {
+case 'success':
+return 'Exito';
+case 'error':
+return 'Error';
+case 'warning':
+return 'Advertencia';
+case 'info':
+default:
+return 'Informacion';
+}
+}
+
+function closeNotification(notification) {
+if (notification.dataset.intervalId) {
+clearInterval(parseInt(notification.dataset.intervalId));
+}
+
+notification.classList.remove('show');
+
+setTimeout(() => {
+notification.remove();
+}, 400);
+}
+
+// Запуск обновления цен
+function startPriceUpdates() {
+stopPriceUpdates();
+
+priceUpdateInterval = setInterval(() => {
+updateInvestmentPrices();
+}, 3000);
+}
+
+// Остановка обновления цен
+function stopPriceUpdates() {
+if (priceUpdateInterval) {
+clearInterval(priceUpdateInterval);
+priceUpdateInterval = null;
+}
+}
+
+// Обновление цен инвестиций
+function updateInvestmentPrices() {
+if (!userInvestments || userInvestments.length === 0) return;
+
+userInvestments.forEach(investment => {
+const changePercent = (Math.random() - 0.3) * 0.02;
+const newPrice = investment.current_price * (1 + changePercent);
+
+investment.current_price = newPrice;
+
+investment.profit = (newPrice - investment.purchase_price) * investment.shares;
+investment.profit_percentage = ((newPrice - investment.purchase_price) / investment.purchase_price) * 100;
+
+updateInvestmentDisplay(investment);
+});
+}
+
+// Обновление отображения инвестиции
+function updateInvestmentDisplay(investment) {
+const portfolioCard = document.getElementById(`investment-${investment.id}`);
+if (portfolioCard) {
+const profitValue = portfolioCard.querySelector('.profit-value');
+const profitPercentage = portfolioCard.querySelector('.profit-percentage');
+const currentValue = portfolioCard.querySelector('.portfolio-stat-value:nth-child(4)');
+const currentPrice = portfolioCard.querySelector('.portfolio-stat-value:nth-child(3)');
+
+if (profitValue) {
+const isPositive = investment.profit >= 0;
+profitValue.className = `profit-value ${isPositive ? 'positive' : 'negative'}`;
+profitValue.textContent = `${isPositive ? '+' : ''}$${Math.abs(investment.profit).toFixed(2)}`;
+}
+
+if (profitPercentage) {
+const isPositive = investment.profit_percentage >= 0;
+profitPercentage.className = `profit-percentage ${isPositive ? 'positive' : 'negative'}`;
+profitPercentage.textContent = `${isPositive ? '+' : ''}${investment.profit_percentage.toFixed(2)}%`;
+}
+
+if (currentValue) {
+currentValue.textContent = `$${(investment.current_price * investment.shares).toFixed(2)}`;
+}
+
+if (currentPrice) {
+currentPrice.textContent = `$${investment.current_price.toFixed(2)}`;
+}
+}
+
+const balanceItem = document.getElementById(`balance-investment-${investment.id}`);
+if (balanceItem) {
+const profitValue = balanceItem.querySelector('.balance-investment-profit-value');
+const profitPercentage = balanceItem.querySelector('.balance-investment-profit-percentage');
+const priceInfo = balanceItem.querySelector('.balance-investment-price');
+
+if (profitValue) {
+const isPositive = investment.profit >= 0;
+profitValue.className = `balance-investment-profit-value ${isPositive ? 'positive' : 'negative'}`;
+profitValue.textContent = `${isPositive ? '+' : ''}$${Math.abs(investment.profit).toFixed(2)}`;
+}
+
+if (profitPercentage) {
+const isPositive = investment.profit_percentage >= 0;
+profitPercentage.className = `balance-investment-profit-percentage ${isPositive ? 'positive' : 'negative'}`;
+profitPercentage.textContent = `${isPositive ? '+' : ''}${investment.profit_percentage.toFixed(2)}%`;
+}
+
+if (priceInfo) {
+priceInfo.textContent = `$${investment.current_price.toFixed(2)} × ${investment.shares} = $${(investment.current_price * investment.shares).toFixed(2)}`;
+}
+}
+}
+
+// Функции чата поддержки
+
+// Опрос непрочитанных сообщений
+function startUnreadCountPolling() {
+stopUnreadCountPolling();
+unreadCountInterval = setInterval(() => {
+updateUnreadCount();
+}, 3000);
+}
+
+function stopUnreadCountPolling() {
+if (unreadCountInterval) {
+clearInterval(unreadCountInterval);
+unreadCountInterval = null;
+}
+}
+
+function updateUnreadCount() {
+if (!currentUser) return;
+
+fetch('/support/unread_count')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+return;
+}
+
+const unreadCount = data.unread_count;
+const supportBtn = document.getElementById('supportChatBtn');
+const adminBtn = document.getElementById('adminTicketsBtn');
+const supportBadge = document.getElementById('supportUnreadBadge');
+const adminBadge = document.getElementById('adminUnreadBadge');
+
+if (currentUser.is_admin && adminBtn) {
+if (unreadCount > 0) {
+adminBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+adminBadge.style.display = 'flex';
+adminBtn.classList.add('has-notification');
+} else {
+adminBadge.style.display = 'none';
+adminBtn.classList.remove('has-notification');
+}
+} else if (supportBtn) {
+if (unreadCount > 0) {
+supportBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+supportBadge.style.display = 'flex';
+supportBtn.classList.add('has-notification');
+} else {
+supportBadge.style.display = 'none';
+supportBtn.classList.remove('has-notification');
+}
+}
+})
+.catch(error => {
+console.error('Error updating unread count:', error);
+});
+}
+
+// Переключение окна чата поддержки
+function toggleSupportChat() {
+const chatWindow = document.getElementById('supportChatWindow');
+const chatBtn = document.getElementById('supportChatBtn');
+
+if (chatWindow.classList.contains('show')) {
+closeSupportChat();
+} else {
+openSupportChat();
+}
+}
+
+// Открытие чата поддержки
+function openSupportChat(createNew = true) {
+const chatWindow = document.getElementById('supportChatWindow');
+const chatBtn = document.getElementById('supportChatBtn');
+
+chatWindow.classList.add('show');
+chatBtn.classList.remove('has-notification');
+
+// Создаем или получаем существующий чат
+if (!currentChat && createNew) {
+fetch('/support/chat/create', {
+method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+currentChat = data.chat;
+saveChatState();
+loadChatMessages();
+startChatMessagePolling();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+} else if (currentChat) {
+loadChatMessages();
+startChatMessagePolling();
+saveChatState();
+}
+}
+
+// Закрытие чата поддержки
+function closeSupportChat() {
+const chatWindow = document.getElementById('supportChatWindow');
+const chatBtn = document.getElementById('supportChatBtn');
+
+chatWindow.classList.remove('show');
+chatBtn.classList.remove('has-notification');
+
+saveChatState();
+stopChatMessagePolling();
+removeAdminChatControls();
+}
+
+// Загрузка сообщений чата
+function loadChatMessages() {
+if (!currentChat) return;
+
+fetch(`/support/chat/${currentChat.id}/messages`)
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+renderChatMessages(data.messages);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Отображение сообщений чата
+function renderChatMessages(messages) {
+const messagesContainer = document.getElementById('supportChatMessages');
+const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 50;
+
+messagesContainer.innerHTML = '';
+
+messages.forEach(message => {
+const messageElement = createMessageElement(message);
+messagesContainer.appendChild(messageElement);
+});
+
+// Автоскролл только если пользователь был внизу
+if (wasAtBottom || !isUserScrolling) {
+messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+}
+
+// Создание элемента сообщения
+function createMessageElement(message) {
+const messageDiv = document.createElement('div');
+messageDiv.className = `chat-message ${message.is_system ? 'system' : (message.sender_id === currentUser.id ? 'user' : 'admin')}`;
+
+const content = document.createElement('div');
+content.className = 'chat-message-content';
+content.textContent = message.message;
+
+const time = document.createElement('div');
+time.className = 'chat-message-time';
+const date = new Date(message.created_at);
+time.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+messageDiv.appendChild(content);
+messageDiv.appendChild(time);
+
+if (message.attachment_url) {
+const attachment = document.createElement('div');
+attachment.className = 'chat-message-attachment';
+
+// Проверяем, является ли вложение изображением
+if (message.attachment_url.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+const img = document.createElement('img');
+img.src = `/uploads/${message.attachment_url}`;
+img.alt = 'Imagen adjunta';
+img.onclick = () => openImageModal(`/uploads/${message.attachment_url}`);
+attachment.appendChild(img);
+} else {
+attachment.innerHTML = `
+<i class="fas fa-paperclip"></i>
+<span>${message.attachment_url.split('_').pop()}</span>
+`;
+}
+
+messageDiv.appendChild(attachment);
+}
+
+// Добавляем возможность кликнуть на профиль пользователя в сообщении
+if (message.sender && currentUser && currentUser.is_admin && message.sender_id !== currentUser.id) {
+messageDiv.style.cursor = 'pointer';
+messageDiv.addEventListener('click', function(e) {
+if (!e.target.closest('.chat-message-attachment')) {
+openUserInfoModal(message.sender.id);
+}
+});
+}
+
+return messageDiv;
+}
+
+// Отправка сообщения в чат
+function sendChatMessage(file = null) {
+if (!currentChat) return;
+
+const chatInput = document.getElementById('chatInput');
+const message = chatInput.value.trim();
+
+if (!message && !file) return;
+
+// Если пользователь пишет в закрытый чат, создаем новый чат
+if (!currentUser.is_admin && currentChat.status === 'closed') {
+fetch('/support/chat/create', {
+method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+currentChat = data.chat;
+saveChatState();
+sendMessageWithFile(message, file);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+} else {
+sendMessageWithFile(message, file);
+}
+}
+
+// Отправка сообщения с файлом
+function sendMessageWithFile(message, file) {
+const chatSendBtn = document.getElementById('chatSendBtn');
+chatSendBtn.disabled = true;
+
+if (file) {
+// Отправляем с файлом через FormData
+const formData = new FormData();
+formData.append('message', message);
+formData.append('attachment', file);
+
+fetch(`/support/chat/${currentChat.id}/message`, {
+method: 'POST',
+body: formData
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+// Если создан новый чат
+if (data.chat) {
+currentChat = data.chat;
+saveChatState();
+updateChatTitle();
+}
+document.getElementById('chatInput').value = '';
+document.getElementById('chatAttachment').value = '';
+loadChatMessages();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al enviar el mensaje', 'error');
+})
+.finally(() => {
+chatSendBtn.disabled = false;
+});
+} else {
+// Отправляем обычное сообщение через JSON
+fetch(`/support/chat/${currentChat.id}/message`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+message: message
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+// Если создан новый чат
+if (data.chat) {
+currentChat = data.chat;
+saveChatState();
+updateChatTitle();
+}
+document.getElementById('chatInput').value = '';
+loadChatMessages();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al enviar el mensaje', 'error');
+})
+.finally(() => {
+chatSendBtn.disabled = false;
+});
+}
+}
+
+// Начать опрос новых сообщений
+function startChatMessagePolling() {
+stopChatMessagePolling();
+
+chatMessageInterval = setInterval(() => {
+if (currentChat) {
+loadChatMessages();
+}
+}, 3000);
+}
+
+// Остановить опрос новых сообщений
+function stopChatMessagePolling() {
+if (chatMessageInterval) {
+clearInterval(chatMessageInterval);
+chatMessageInterval = null;
+}
+}
+
+// Функции для админ-панели обращений
+
+// Переключение окна обращений
+function toggleAdminTickets() {
+const ticketsWindow = document.getElementById('adminTicketsWindow');
+const ticketsBtn = document.getElementById('adminTicketsBtn');
+
+if (ticketsWindow.classList.contains('show')) {
+closeAdminTickets();
+} else {
+openAdminTickets();
+}
+}
+
+// Открытие окна обращений
+function openAdminTickets() {
+const ticketsWindow = document.getElementById('adminTicketsWindow');
+const ticketsBtn = document.getElementById('adminTicketsBtn');
+
+ticketsWindow.classList.add('show');
+ticketsBtn.classList.remove('has-notification');
+
+loadPendingTickets();
+}
+
+// Закрытие окна обращений
+function closeAdminTickets() {
+const ticketsWindow = document.getElementById('adminTicketsWindow');
+const ticketsBtn = document.getElementById('adminTicketsBtn');
+
+ticketsWindow.classList.remove('show');
+}
+
+// Переключение вкладок обращений
+function switchTicketTab(tab) {
+const tabs = document.querySelectorAll('.admin-tickets-tab');
+tabs.forEach(t => t.classList.remove('active'));
+event.target.classList.add('active');
+
+if (tab === 'pending') {
+loadPendingTickets();
+} else if (tab === 'active') {
+loadActiveTickets();
+} else if (tab === 'closed') {
+loadClosedTickets();
+}
+}
+
+// Загрузка новых обращений
+function loadPendingTickets() {
+fetch('/support/chats/pending')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+renderPendingTickets(data.chats);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Загрузка активных обращений
+function loadActiveTickets() {
+fetch('/support/chats/active')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+// Фильтруем только чаты, где текущий админ является администратором
+const adminChats = data.chats.filter(chat => chat.admin_id === currentUser.id);
+renderActiveTickets(adminChats);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Загрузка закрытых обращений
+function loadClosedTickets() {
+fetch('/support/chats/closed')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+renderClosedTickets(data.chats);
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Отображение новых обращений
+function renderPendingTickets(chats) {
+const content = document.getElementById('adminTicketsContent');
+content.innerHTML = '';
+
+if (chats.length === 0) {
+content.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No hay solicitudes nuevas</p>';
+return;
+}
+
+chats.forEach(chat => {
+const ticketElement = createPendingTicketElement(chat);
+content.appendChild(ticketElement);
+});
+}
+
+// Отображение активных обращений
+function renderActiveTickets(chats) {
+const content = document.getElementById('adminTicketsContent');
+content.innerHTML = '';
+
+if (chats.length === 0) {
+content.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No hay chats activos</p>';
+return;
+}
+
+chats.forEach(chat => {
+const ticketElement = createActiveTicketElement(chat);
+content.appendChild(ticketElement);
+});
+}
+
+// Отображение закрытых обращений
+function renderClosedTickets(chats) {
+const content = document.getElementById('adminTicketsContent');
+content.innerHTML = '';
+
+if (chats.length === 0) {
+content.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No hay chats cerrados</p>';
+return;
+}
+
+chats.forEach(chat => {
+const ticketElement = createClosedTicketElement(chat);
+content.appendChild(ticketElement);
+});
+}
+
+// Создание элемента нового обращения
+function createPendingTicketElement(chat) {
+const ticket = document.createElement('div');
+ticket.className = 'ticket-item';
+
+const date = new Date(chat.created_at);
+const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+ticket.innerHTML = `
+<div class="ticket-header">
+<div class="ticket-user">${chat.user.nickname}</div>
+<div class="ticket-date">${dateStr}</div>
+</div>
+<div class="ticket-message">${chat.last_message ? chat.last_message.message : 'Nueva solicitud'}</div>
+<div class="ticket-action">
+<button class="ticket-join-btn" onclick="joinChat(${chat.id})">Conectarse</button>
+</div>
+`;
+
+return ticket;
+}
+
+// Создание элемента активного обращения
+function createActiveTicketElement(chat) {
+const ticket = document.createElement('div');
+ticket.className = 'ticket-item';
+
+const date = new Date(chat.admin_joined_at);
+const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+ticket.innerHTML = `
+<div class="ticket-header">
+<div class="ticket-user">${chat.user.nickname}</div>
+<div class="ticket-date">${dateStr}</div>
+</div>
+<div class="ticket-message">${chat.last_message ? chat.last_message.message : 'Chat activo'}</div>
+<div class="ticket-action">
+<button class="ticket-enter-btn" onclick="enterChat(${chat.id})">Entrar al chat</button>
+</div>
+`;
+
+return ticket;
+}
+
+// Создание элемента закрытого обращения
+function createClosedTicketElement(chat) {
+const ticket = document.createElement('div');
+ticket.className = 'ticket-item';
+
+const date = new Date(chat.closed_at);
+const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+ticket.innerHTML = `
+<div class="ticket-header">
+<div class="ticket-user">${chat.user.nickname}</div>
+<div class="ticket-date">${dateStr}</div>
+</div>
+<div class="ticket-message">${chat.last_message ? chat.last_message.message : 'Chat cerrado'}</div>
+<div class="ticket-action">
+<button class="ticket-enter-btn" onclick="viewChatHistory(${chat.id})">Ver historial</button>
+</div>
+`;
+
+return ticket;
+}
+
+// Подключение к чату
+function joinChat(chatId) {
+fetch(`/support/chat/${chatId}/join`, {
+method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('Te has conectado al chat', 'success');
+currentChat = data.chat;
+saveChatState();
+closeAdminTickets();
+openSupportChat(false);
+updateChatTitle();
+addAdminChatControls();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al conectarse al chat', 'error');
+});
+}
+
+// Вход в активный чат
+function enterChat(chatId) {
+fetch('/support/chats/active')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+const chat = data.chats.find(c => c.id === chatId);
+if (chat) {
+currentChat = chat;
+saveChatState();
+closeAdminTickets();
+openSupportChat(false);
+updateChatTitle();
+addAdminChatControls();
+}
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Просмотр истории чата
+function viewChatHistory(chatId) {
+fetch('/support/chats/closed')
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+console.error(data.error);
+} else {
+const chat = data.chats.find(c => c.id === chatId);
+if (chat) {
+currentChat = chat;
+saveChatState();
+closeAdminTickets();
+openSupportChat(false);
+updateChatTitle();
+removeAdminChatControls();
+}
+}
+})
+.catch(error => {
+console.error('Error:', error);
+});
+}
+
+// Обновление заголовка чата
+function updateChatTitle() {
+if (!currentChat || !currentChat.user) return;
+
+const titleElement = document.querySelector('.support-chat-title span');
+if (titleElement) {
+titleElement.textContent = `Chat con ${currentChat.user.nickname}`;
+}
+}
+
+// Добавление контролов админа в чат (только для админа)
+function addAdminChatControls() {
+if (!currentUser || !currentUser.is_admin) return;
+
+const chatWindow = document.querySelector('.support-chat-window');
+const existingControls = document.getElementById('adminChatControls');
+if (existingControls) {
+existingControls.remove();
+}
+
+const controls = document.createElement('div');
+controls.id = 'adminChatControls';
+controls.className = 'admin-chat-controls';
+controls.innerHTML = `
+<button class="admin-chat-btn admin-add-balance-btn" onclick="openBalanceModal()">
+<i class="fas fa-dollar-sign mr-1"></i>Anadir Balance
+</button>
+<button class="admin-chat-btn admin-close-btn" onclick="closeChat()">
+<i class="fas fa-times mr-1"></i>Cerrar Chat
+</button>
+`;
+
+chatWindow.appendChild(controls);
+}
+
+// Удаление контролов админа из чата
+function removeAdminChatControls() {
+const controls = document.getElementById('adminChatControls');
+if (controls) {
+controls.remove();
+}
+}
+
+// Открытие модального окна пополнения
+function openBalanceModal() {
+document.getElementById('balanceModal').classList.add('show');
+document.getElementById('balanceAmountInput').value = '';
+document.getElementById('balanceAmountInput').focus();
+}
+
+// Закрытие модального окна пополнения
+function closeBalanceModal() {
+document.getElementById('balanceModal').classList.remove('show');
+}
+
+// Подтверждение пополнения баланса
+function confirmAddBalance() {
+const amountInput = document.getElementById('balanceAmountInput');
+const amount = parseFloat(amountInput.value);
+
+if (!amount || amount <= 0) {
+showNotification('Ingrese una cantidad valida', 'error');
+return;
+}
+
+addBalanceToChat(amount);
+closeBalanceModal();
+}
+
+// Добавление баланса пользователю из чата
+function addBalanceToUser(chatId) {
+if (!currentChat) return;
+
+fetch(`/support/chat/${currentChat.id}/add_balance`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+amount: amount
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(`$${amount.toFixed(2)} anadidos correctamente`, 'success');
+loadChatMessages();
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al anadir balance', 'error');
+});
+}
+
+// Закрытие чата (новая логика)
+function closeChat() {
+if (!currentChat) return;
+
+fetch(`/support/chat/${currentChat.id}/close`, {
+method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification('Chat cerrado correctamente', 'success');
+loadChatMessages(); // Загружаем сообщения чтобы показать системное сообщение
+setTimeout(() => {
+currentChat = null;
+saveChatState();
+closeSupportChat();
+removeAdminChatControls();
+loadPendingTickets();
+}, 2000); // Даем время пользователю прочитать сообщение
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al cerrar el chat', 'error');
+});
+}
+
+// Закрытие модальных окон при клике вне их
+window.addEventListener('click', function(e) {
+const balanceModal = document.getElementById('balanceModal');
+const assignAdminModal = document.getElementById('assignAdminModal');
+const removeAdminModal = document.getElementById('removeAdminModal');
+const userInfoModal = document.getElementById('userInfoModal');
+const switchAccountModal = document.getElementById('switchAccountModal');
+
+if (e.target === balanceModal) {
+closeBalanceModal();
+}
+if (e.target === assignAdminModal) {
+closeAssignAdminModal();
+}
+if (e.target === removeAdminModal) {
+closeRemoveAdminModal();
+}
+if (e.target === userInfoModal) {
+closeUserInfoModal();
+}
+if (e.target === switchAccountModal) {
+closeSwitchAccountModal();
+}
+});
+
+// Обработка Enter в модальных окнах
+document.getElementById('balanceAmountInput').addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+confirmAddBalance();
+}
+});
+
+document.getElementById('assignAdminUsername').addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+confirmAssignAdmin();
+}
+});
+
+document.getElementById('removeAdminUsername').addEventListener('keypress', function(e) {
+if (e.key === 'Enter') {
+confirmRemoveAdmin();
+}
+});
+
+// Обработчик формы массовой рассылки
+document.getElementById('sendToAll').addEventListener('change', function() {
+const specificEmailsGroup = document.getElementById('specificEmailsGroup');
+if (this.checked) {
+specificEmailsGroup.style.display = 'none';
+document.getElementById('specificEmails').required = false;
+} else {
+specificEmailsGroup.style.display = 'block';
+document.getElementById('specificEmails').required = true;
+}
+});
+
+document.getElementById('bulkEmailForm').addEventListener('submit', function(e) {
+e.preventDefault();
+
+const subject = document.getElementById('emailSubject').value.trim();
+const message = document.getElementById('emailMessage').value.trim();
+const sendToAll = document.getElementById('sendToAll').checked;
+const specificEmails = document.getElementById('specificEmails').value.trim();
+
+if (!subject || !message) {
+showNotification('El asunto y el mensaje son obligatorios', 'error');
+return;
+}
+
+if (!sendToAll && !specificEmails) {
+showNotification('Debe especificar los destinatarios', 'error');
+return;
+}
+
+fetch('/admin/send_bulk_email', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+subject: subject,
+message: message,
+send_to_all: sendToAll,
+specific_emails: specificEmails
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.error) {
+showNotification(data.error, 'error');
+} else {
+showNotification(data.message, 'success');
+document.getElementById('bulkEmailForm').reset();
+document.getElementById('specificEmailsGroup').style.display = 'none';
+}
+})
+.catch(error => {
+console.error('Error:', error);
+showNotification('Ocurrio un error al enviar el correo masivo', 'error');
+});
+});
+
+// Анимация роста баров
+const style = document.createElement('style');
+style.textContent = `
+@keyframes growBar {
+from { height: 0; opacity: 0; }
+to { height: var(--height); opacity: 1; }
+}
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
