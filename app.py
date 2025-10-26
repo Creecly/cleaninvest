@@ -12,6 +12,9 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import time
 import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
 
@@ -41,7 +44,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Mail configuration
+# Mail configuration with better settings
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
@@ -49,7 +52,7 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() == 'true
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-app.config['MAIL_TIMEOUT'] = 30
+app.config['MAIL_TIMEOUT'] = int(os.getenv('MAIL_TIMEOUT', '30'))
 app.config['MAIL_SUPPRESS_SEND'] = os.getenv('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
 app.config['MAIL_ASCII_ATTACHMENTS'] = True
 
@@ -60,7 +63,13 @@ cache = Cache(app, config={
 })
 
 # Initialize extensions
-mail = Mail(app)
+try:
+    mail = Mail(app)
+    logger.info("✅ Mail system initialized successfully")
+except Exception as e:
+    logger.error(f"❌ Mail initialization failed: {str(e)}")
+    mail = None
+
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
@@ -228,57 +237,80 @@ class UserInvestment(db.Model):
 
 # Email functions
 def send_welcome_email(user, password):
+    """Отправка приветственного email"""
+    if not mail:
+        logger.warning("⚠️ Mail system not available")
+        return False
+
     try:
         with app.app_context():
             msg = Message(
-                subject='Bienvenido a Clean.Invest 🚀',
+                subject='🚀 Bienvenido a Clean.Invest',
                 sender=app.config['MAIL_DEFAULT_SENDER'],
                 recipients=[user.email]
             )
 
-            msg.body = f"""¡Hola {user.name}!
+            # Простой текст для лучшей совместимости
+            msg.body = f"""Hola {user.name},
 
-¡Bienvenido a Clean.Invest! Tu cuenta ha sido creada exitosamente.
+¡Bienvenido a Clean.Invest! 🚀
 
-📋 TUS DATOS DE ACCESO:
-• Usuario: {user.nickname}
-• Contraseña: {password}
-• Email: {user.email}
+TUS DATOS DE ACCESO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Usuario: {user.nickname}
+Contraseña: {password}
+Email: {user.email}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-💰 Balance inicial: ${user.balance:.2f}
+Balance inicial: ${user.balance:.2f}
 
-🌐 Sitio web: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
+Sitio web: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
 
-¡Estamos aquí para ayudarte a alcanzar tus metas financieras!
+Gracias por unirte a nosotros!
 
 Atentamente,
 El equipo de Clean.Invest
 ---
-Este es un correo automático. Por favor no respondas a este mensaje.
+Este es un correo automático. Por favor no responder.
 """
 
             mail.send(msg)
-            logger.info(f"Welcome email sent to {user.email}")
+            logger.info(f"✅ Welcome email sent to {user.email}")
             return True
+
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"❌ SMTP Authentication Error: {str(e)}")
+        return False
+    except smtplib.SMTPRecipientsRefused as e:
+        logger.error(f"❌ SMTP Recipients Refused: {str(e)}")
+        return False
+    except smtplib.SMTPServerDisconnected as e:
+        logger.error(f"❌ SMTP Server Disconnected: {str(e)}")
+        return False
     except Exception as e:
-        logger.error(f"Welcome email error: {str(e)}")
+        logger.error(f"❌ Email error: {str(e)}")
         return False
 
 
 def send_stock_growth_email(user, company, growth_percentage):
+    """Отправка email о росте акций"""
+    if not mail:
+        logger.warning("⚠️ Mail system not available")
+        return False
+
     try:
         with app.app_context():
             msg = Message(
-                subject=f'🚀 ALERTA: {company.name} +{growth_percentage:.1f}%',
+                subject=f'📈 ALERTA: {company.name} +{growth_percentage:.1f}%',
                 sender=app.config['MAIL_DEFAULT_SENDER'],
                 recipients=[user.email]
             )
 
-            msg.body = f"""¡Hola {user.name}!
+            msg.body = f"""Hola {user.name},
 
-🚈 ALERTA URGENTE DE CRECIMIENTO 🚈
+📈 ALERTA URGENTE DE CRECIMIENTO 📈
 
-Tu inversión en {company.name} ha crecido un {growth_percentage:.1f}%!
+Tu inversión en {company.name} ha crecido {growth_percentage:.1f}%!
 
 💰 Precio actual: ${company.base_price * (1 + growth_percentage / 100):.2f}
 📈 ¡Considera vender para asegurar ganancias!
@@ -296,10 +328,11 @@ Este es un correo automático con información importante.
 """
 
             mail.send(msg)
-            logger.info(f"Growth email sent to {user.email}")
+            logger.info(f"✅ Growth email sent to {user.email}")
             return True
+
     except Exception as e:
-        logger.error(f"Growth email error: {str(e)}")
+        logger.error(f"❌ Growth email error: {str(e)}")
         return False
 
 
@@ -379,7 +412,7 @@ with app.app_context():
                 db.session.add(company)
 
             db.session.commit()
-            logger.info("Initial companies created")
+            logger.info("✅ Initial companies created")
     except Exception as e:
         logger.error(f"Database init error: {e}")
 
@@ -413,6 +446,7 @@ def register():
         email = data.get('email', '').strip()
         password = data.get('password', '')
 
+        # Валидация
         if not all([name, nickname, email, password]):
             return jsonify({'error': 'Todos los campos son obligatorios'}), 400
 
@@ -429,39 +463,48 @@ def register():
         if len(password) < 7:
             return jsonify({'error': 'La contraseña debe tener al menos 7 caracteres'}), 400
 
+        # Проверка существования пользователя
         if User.query.filter_by(nickname=nickname).first():
             return jsonify({'error': 'Este nombre de usuario ya está en uso'}), 400
 
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Este email ya está registrado'}), 400
 
+        # Создание пользователя
         user = User(name=name, nickname=nickname, email=email)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
 
-        # Send email in background
-        import threading
-        def send_email_background():
-            with app.app_context():
-                send_welcome_email(user, password)
+        # Установка сессии
+        session['user_id'] = user.id
+        session.permanent = True
 
+        # Отправка email в фоновом (без ошибок)
+        def send_email_background():
+            try:
+                with app.app_context():
+                    send_welcome_email(user, password)
+            except Exception as e:
+                logger.error(f"Background email error: {str(e)}")
+
+        # Запуск фонового потока без ошибок
+        import threading
         email_thread = threading.Thread(target=send_email_background)
         email_thread.daemon = True
         email_thread.start()
 
-        session['user_id'] = user.id
-        session.permanent = True
-
+        # Возвращаем успешный ответ немедленно
         return jsonify({
             'message': '¡Registro exitoso! Bienvenido a Clean.Invest',
             'user': user.to_dict(),
-            'email_sent': True
+            'email_sent': True  # Всегда true, т.к. отправка в фоне
         })
 
     except Exception as e:
         logger.error(f"Registration error: {str(e)}")
-        return handle_db_error(e)
+        db.session.rollback()
+        return jsonify({'error': 'Error en registro. Inténtalo de nuevo.'}), 500
 
 
 @app.route('/login', methods=['POST'])
@@ -842,82 +885,6 @@ def admin_get_stats():
     except Exception as e:
         logger.error(f"Get stats error: {str(e)}")
         return handle_db_error(e)
-
-
-@app.route('/admin/send_bulk_email', methods=['POST'])
-def admin_send_bulk_email():
-    try:
-        if 'user_id' not in session:
-            return jsonify({'error': 'No has iniciado sesión'}), 401
-
-        admin = db.session.get(User, session['user_id'])
-        if not admin or not admin.is_admin:
-            return jsonify({'error': 'Acceso denegado'}), 403
-
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No data received'}), 400
-
-        subject = data.get('subject', '').strip()
-        message = data.get('message', '').strip()
-        send_to_all = data.get('send_to_all', False)
-        specific_emails = data.get('specific_emails', '').strip()
-
-        if not subject or not message:
-            return jsonify({'error': 'El asunto y el mensaje son obligatorios'}), 400
-
-        # Get recipients
-        recipients = []
-        if send_to_all:
-            users = User.query.all()
-            recipients = [user.email for user in users]
-        elif specific_emails:
-            email_list = [email.strip() for email in specific_emails.split(',')]
-            for email in email_list:
-                user = User.query.filter_by(email=email).first()
-                if user:
-                    recipients.append(email)
-        else:
-            return jsonify({'error': 'Debes seleccionar destinatarios'}), 400
-
-        if not recipients:
-            return jsonify({'error': 'No se encontraron destinatarios válidos'}), 400
-
-        # Send emails in batches to avoid timeout
-        batch_size = 10
-        success_count = 0
-        error_count = 0
-
-        with mail.connect() as conn:
-            for i in range(0, len(recipients), batch_size):
-                batch = recipients[i:i + batch_size]
-                for email in batch:
-                    try:
-                        msg = Message(
-                            subject=subject,
-                            sender=app.config['MAIL_DEFAULT_SENDER'],
-                            recipients=[email],
-                            body=f"{subject}\n\n{message}\n\nClean.Invest\n\n{os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}"
-                        )
-                        conn.send(msg)
-                        success_count += 1
-                        logger.info(f"Email sent to {email}")
-                    except Exception as e:
-                        logger.error(f"Email error to {email}: {str(e)}")
-                        error_count += 1
-
-                # Small delay between batches
-                time.sleep(0.1)
-
-        return jsonify({
-            'message': f'Email enviado exitosamente a {success_count} usuarios',
-            'success_count': success_count,
-            'error_count': error_count,
-            'total_recipients': len(recipients)
-        })
-    except Exception as e:
-        logger.error(f"Bulk email error: {str(e)}")
-        return jsonify({'error': 'Error al enviar emails. Inténtalo con menos destinatarios.'}), 500
 
 
 # Support chat routes
@@ -1390,6 +1357,49 @@ def switch_account():
     except Exception as e:
         logger.error(f"Switch account error: {str(e)}")
         return handle_db_error(e)
+
+
+# Test email route
+@app.route('/test-email')
+def test_email():
+    """Тестовый роут для проверки почты"""
+    try:
+        if not mail:
+            return jsonify({
+                'error': '❌ Mail system not configured',
+                'details': 'Check MAIL_USERNAME and MAIL_PASSWORD in Railway Variables'
+            }), 500
+
+        with app.app_context():
+            msg = Message(
+                subject='✅ Test Email from Clean.Invest',
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                recipients=[app.config['MAIL_USERNAME']]
+            )
+            msg.body = f"""This is a test email from Clean.Invest Railway deployment.
+
+Mail Server: {app.config['MAIL_SERVER']}
+Port: {app.config['MAIL_PORT']}
+TLS: {app.config['MAIL_USE_TLS']}
+Username: {app.config['MAIL_USERNAME']}
+
+Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+✅ Email system is working correctly!
+"""
+
+            mail.send(msg)
+            return jsonify({
+                'message': '✅ Test email sent successfully!',
+                'to': app.config['MAIL_USERNAME'],
+                'from': app.config['MAIL_DEFAULT_SENDER']
+            })
+
+    except Exception as e:
+        return jsonify({
+            'error': f'❌ Test email failed: {str(e)}',
+            'type': type(e).__name__
+        }), 500
 
 
 # Error handlers
