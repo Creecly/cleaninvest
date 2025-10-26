@@ -48,7 +48,7 @@ mail = Mail(app)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
-# МОДЕЛИ
+# МОДЕЛИ (добавь их в app.py для простоты)
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -218,9 +218,88 @@ class ChatMessage(db.Model):
         }
 
 
-# Создаем таблицы
+# АВТОМАТИЧЕСКАЯ ИНИЦИАЛИЗАЦИЯ БД
+def initialize_database():
+    """Initialize database with tables and companies"""
+    try:
+        # Создаем таблицы
+        db.create_all()
+        print("✅ Database tables created successfully")
+
+        # Проверяем, есть ли компании
+        if Company.query.count() == 0:
+            print("🔄 Initializing database with companies...")
+
+            companies = [
+                {"name": "EcoEnergy Plus", "symbol": "EEP", "category": "Energia renovable", "base_price": 25.50,
+                 "description": "Lider en energia solar y eolica", "icon": "fa-leaf"},
+                {"name": "TechFuture AI", "symbol": "TFAI", "category": "Inteligencia artificial", "base_price": 120.75,
+                 "description": "Desarrollo de IA de vanguardia", "icon": "fa-microchip"},
+                {"name": "SpaceX Ventures", "symbol": "SPXV", "category": "Aeroespacial", "base_price": 350.20,
+                 "description": "Exploracion espacial comercial", "icon": "fa-rocket"},
+                {"name": "BioMed Solutions", "symbol": "BMS", "category": "Biotecnologia", "base_price": 85.40,
+                 "description": "Investigacion medica avanzada", "icon": "fa-dna"},
+                {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
+                 "description": "Vehiculos electricos sostenibles", "icon": "fa-car"},
+                {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnologia", "base_price": 65.80,
+                 "description": "Soluciones de computacion en la nube", "icon": "fa-cloud"},
+                {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
+                 "description": "Tecnologia alimentaria sostenible", "icon": "fa-utensils"},
+                {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robotica", "base_price": 95.60,
+                 "description": "Automatizacion industrial avanzada", "icon": "fa-robot"},
+                {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
+                 "description": "Tecnologias de purificacion de agua", "icon": "fa-tint"},
+                {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnologia", "base_price": 180.50,
+                 "description": "Computacion cuantica de proxima generacion", "icon": "fa-atom"},
+                {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
+                 "description": "Ropa sostenible y etica", "icon": "fa-tshirt"},
+                {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnologia", "base_price": 55.40,
+                 "description": "Sistemas de hogar inteligente", "icon": "fa-home"},
+                {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
+                 "description": "Experiencias de realidad virtual inmersivas", "icon": "fa-vr-cardboard"},
+                {"name": "BioFuels Global", "symbol": "BFG", "category": "Energia", "base_price": 19.85,
+                 "description": "Produccion de biocombustibles sostenibles", "icon": "fa-gas-pump"},
+                {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
+                 "description": "Tecnologias para el cuidado de la salud", "icon": "fa-heartbeat"},
+                {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
+                 "description": "Seguridad de activos digitales", "icon": "fa-lock"},
+                {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
+                 "description": "Soluciones de agricultura urbana", "icon": "fa-seedling"},
+                {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
+                 "description": "Materiales avanzados a nanoescala", "icon": "fa-atom"},
+                {"name": "EduTech Global", "symbol": "EDG", "category": "Educacion", "base_price": 41.80,
+                 "description": "Plataformas de aprendizaje digital", "icon": "fa-graduation-cap"},
+                {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automocion", "base_price": 125.30,
+                 "description": "Tecnologia de conduccion autonoma", "icon": "fa-car-side"},
+                {"name": "Renewable Storage", "symbol": "RES", "category": "Energia", "base_price": 53.70,
+                 "description": "Soluciones de almacenamiento de energia", "icon": "fa-battery-full"},
+                {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
+                 "description": "Tecnologias de limpieza oceanica", "icon": "fa-water"},
+                {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
+                 "description": "Proteccion de datos y sistemas", "icon": "fa-shield-alt"},
+                {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
+                 "description": "Experiencias turisticas espaciales", "icon": "fa-space-shuttle"},
+                {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
+                 "description": "Diagnostico medico con IA", "icon": "fa-user-md"}
+            ]
+
+            for company_data in companies:
+                company = Company(**company_data)
+                db.session.add(company)
+
+            db.session.commit()
+            print("✅ Database initialized with 25 companies")
+        else:
+            print("✅ Database already contains companies")
+
+    except Exception as e:
+        print(f"❌ Error initializing database: {e}")
+        db.session.rollback()
+
+
+# Вызываем инициализацию при запуске
 with app.app_context():
-    db.create_all()
+    initialize_database()
 
 
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -319,73 +398,6 @@ def send_welcome_email(user, password):
             print(f"✅ Email sent to {user.email}")
         except Exception as e:
             print(f"❌ Error sending email: {e}")
-
-    thread = threading.Thread(target=send_async)
-    thread.daemon = True
-    thread.start()
-
-
-def send_stock_growth_email(user, company, growth_percentage):
-    def send_async():
-        try:
-            msg = Message(
-                subject='🚀 ¡ALERTA DE CRECIMIENTO! Tu inversion esta disparada - Clean.Invest',
-                sender=app.config['MAIL_DEFAULT_SENDER'],
-                recipients=[user.email]
-            )
-
-            msg.html = f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Alerta de Crecimiento - Clean.Invest</title>
-                <style>
-                    body {{
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        line-height: 1.6;
-                        color: #333;
-                        max-width: 600px;
-                        margin: 0 auto;
-                        padding: 20px;
-                        background-color: #f4f4f4;
-                    }}
-                    .alert-header {{
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                        color: white;
-                        padding: 40px;
-                        text-align: center;
-                        border-radius: 10px 10px 0 0;
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                    }}
-                    .growth-percentage {{
-                        font-size: 48px;
-                        font-weight: 700;
-                        color: #10b981;
-                        margin: 20px 0;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="alert-header">
-                    <h1>🚀 ¡ALERTA URGENTE!</h1>
-                    <p>Tu inversion en {company.name} esta disparada</p>
-                    <div class="growth-percentage">+{growth_percentage}%</div>
-                </div>
-                <div class="content">
-                    <p>Estimado/a <strong>{user.name}</strong>,</p>
-                    <p>¡Tenemos noticias increibles! {company.name} muestra crecimiento excepcional.</p>
-                    <p>Considera vender parte de tus acciones para asegurar ganancias.</p>
-                </div>
-            </body>
-            </html>
-            """
-
-            with app.app_context():
-                mail.send(msg)
-            print(f"✅ Growth email sent to {user.email}")
-        except Exception as e:
-            print(f"❌ Error sending growth email: {e}")
 
     thread = threading.Thread(target=send_async)
     thread.daemon = True
@@ -630,16 +642,6 @@ def buy_stocks():
         user.investments_count += 1
 
         db.session.commit()
-
-        # Отправляем email о росте акции через 30 секунд
-        def send_growth_notification():
-            time.sleep(30)
-            growth_percentage = random.uniform(120, 250)
-            send_stock_growth_email(user, company, growth_percentage)
-
-        thread = threading.Thread(target=send_growth_notification)
-        thread.daemon = True
-        thread.start()
 
         return jsonify({
             'message': '¡Acciones compradas exitosamente!',
