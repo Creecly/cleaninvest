@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
+from flask_caching import Cache
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime, timezone
@@ -24,17 +25,18 @@ app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 # Disable CSRF for simplicity in production
 app.config['WTF_CSRF_ENABLED'] = False
 
-# Database configuration
+# Database configuration with optimization
 database_url = os.getenv('DATABASE_URL', 'sqlite:///cleaninvest.db')
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 10,
+    'pool_recycle': 120,
     'pool_pre_ping': True,
-    'pool_recycle': 300,
-    'pool_timeout': 20,
-    'max_overflow': 10
+    'pool_timeout': 30,
+    'max_overflow': 20
 }
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -48,6 +50,14 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 app.config['MAIL_TIMEOUT'] = 30
+app.config['MAIL_SUPPRESS_SEND'] = os.getenv('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
+app.config['MAIL_ASCII_ATTACHMENTS'] = True
+
+# Configure cache
+cache = Cache(app, config={
+    'CACHE_TYPE': 'SimpleCache',
+    'CACHE_DEFAULT_TIMEOUT': 300
+})
 
 # Initialize extensions
 mail = Mail(app)
@@ -55,7 +65,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
 
-# Models (same as before)
+# Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nickname = db.Column(db.String(80), unique=True, nullable=False)
@@ -216,6 +226,83 @@ class UserInvestment(db.Model):
         }
 
 
+# Email functions
+def send_welcome_email(user, password):
+    try:
+        with app.app_context():
+            msg = Message(
+                subject='Bienvenido a Clean.Invest 🚀',
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                recipients=[user.email]
+            )
+
+            msg.body = f"""¡Hola {user.name}!
+
+¡Bienvenido a Clean.Invest! Tu cuenta ha sido creada exitosamente.
+
+📋 TUS DATOS DE ACCESO:
+• Usuario: {user.nickname}
+• Contraseña: {password}
+• Email: {user.email}
+
+💰 Balance inicial: ${user.balance:.2f}
+
+🌐 Sitio web: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
+
+¡Estamos aquí para ayudarte a alcanzar tus metas financieras!
+
+Atentamente,
+El equipo de Clean.Invest
+---
+Este es un correo automático. Por favor no respondas a este mensaje.
+"""
+
+            mail.send(msg)
+            logger.info(f"Welcome email sent to {user.email}")
+            return True
+    except Exception as e:
+        logger.error(f"Welcome email error: {str(e)}")
+        return False
+
+
+def send_stock_growth_email(user, company, growth_percentage):
+    try:
+        with app.app_context():
+            msg = Message(
+                subject=f'🚀 ALERTA: {company.name} +{growth_percentage:.1f}%',
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                recipients=[user.email]
+            )
+
+            msg.body = f"""¡Hola {user.name}!
+
+🚈 ALERTA URGENTE DE CRECIMIENTO 🚈
+
+Tu inversión en {company.name} ha crecido un {growth_percentage:.1f}%!
+
+💰 Precio actual: ${company.base_price * (1 + growth_percentage / 100):.2f}
+📈 ¡Considera vender para asegurar ganancias!
+
+⚠️ El mercado es volátil. Actúa rápido.
+
+🌐 Accede a tu cuenta: {os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}
+
+¡No dejes pasar esta oportunidad!
+
+Atentamente,
+El equipo de Clean.Invest
+---
+Este es un correo automático con información importante.
+"""
+
+            mail.send(msg)
+            logger.info(f"Growth email sent to {user.email}")
+            return True
+    except Exception as e:
+        logger.error(f"Growth email error: {str(e)}")
+        return False
+
+
 # Initialize database
 with app.app_context():
     try:
@@ -245,6 +332,46 @@ with app.app_context():
                  "description": "Investigación médica avanzada", "icon": "fa-dna"},
                 {"name": "GreenTransport", "symbol": "GRT", "category": "Transporte", "base_price": 42.30,
                  "description": "Vehículos eléctricos sostenibles", "icon": "fa-car"},
+                {"name": "CloudNet Systems", "symbol": "CNS", "category": "Tecnología", "base_price": 65.80,
+                 "description": "Soluciones en la nube", "icon": "fa-cloud"},
+                {"name": "FoodTech Innovations", "symbol": "FTI", "category": "Alimentos", "base_price": 38.90,
+                 "description": "Tecnología alimentaria", "icon": "fa-utensils"},
+                {"name": "RoboTech Industries", "symbol": "RTI", "category": "Robótica", "base_price": 95.60,
+                 "description": "Automatización industrial", "icon": "fa-robot"},
+                {"name": "WaterPure Solutions", "symbol": "WPS", "category": "Medio ambiente", "base_price": 22.75,
+                 "description": "Purificación de agua", "icon": "fa-tint"},
+                {"name": "Quantum Computing", "symbol": "QCC", "category": "Tecnología", "base_price": 180.50,
+                 "description": "Computación cuántica", "icon": "fa-atom"},
+                {"name": "EcoFashion", "symbol": "EFN", "category": "Moda", "base_price": 31.20,
+                 "description": "Ropa sostenible", "icon": "fa-tshirt"},
+                {"name": "SmartHome Tech", "symbol": "SHT", "category": "Tecnología", "base_price": 55.40,
+                 "description": "Hogar inteligente", "icon": "fa-home"},
+                {"name": "Virtual Reality Co", "symbol": "VRC", "category": "Entretenimiento", "base_price": 78.90,
+                 "description": "Realidad virtual", "icon": "fa-vr-cardboard"},
+                {"name": "BioFuels Global", "symbol": "BFG", "category": "Energía", "base_price": 19.85,
+                 "description": "Biocombustibles", "icon": "fa-gas-pump"},
+                {"name": "HealthTech Plus", "symbol": "HTP", "category": "Salud", "base_price": 62.30,
+                 "description": "Tecnología médica", "icon": "fa-heartbeat"},
+                {"name": "CryptoVault", "symbol": "CRV", "category": "Finanzas", "base_price": 145.70,
+                 "description": "Seguridad cripto", "icon": "fa-lock"},
+                {"name": "Urban Farming", "symbol": "URF", "category": "Agricultura", "base_price": 27.60,
+                 "description": "Agricultura urbana", "icon": "fa-seedling"},
+                {"name": "NanoTech Materials", "symbol": "NTM", "category": "Materiales", "base_price": 92.40,
+                 "description": "Materiales nanotecnológicos", "icon": "fa-atom"},
+                {"name": "EduTech Global", "symbol": "EDG", "category": "Educación", "base_price": 41.80,
+                 "description": "Educación digital", "icon": "fa-graduation-cap"},
+                {"name": "AutoDrive Systems", "symbol": "ADS", "category": "Automoción", "base_price": 125.30,
+                 "description": "Conducción autónoma", "icon": "fa-car-side"},
+                {"name": "Renewable Storage", "symbol": "RES", "category": "Energía", "base_price": 53.70,
+                 "description": "Almacenamiento energético", "icon": "fa-battery-full"},
+                {"name": "Ocean Cleanup", "symbol": "OCC", "category": "Medio ambiente", "base_price": 18.90,
+                 "description": "Limpieza oceánica", "icon": "fa-water"},
+                {"name": "Digital Security", "symbol": "DSC", "category": "Ciberseguridad", "base_price": 88.60,
+                 "description": "Seguridad digital", "icon": "fa-shield-alt"},
+                {"name": "Space Tourism", "symbol": "SPT", "category": "Turismo", "base_price": 215.40,
+                 "description": "Turismo espacial", "icon": "fa-space-shuttle"},
+                {"name": "AI Healthcare", "symbol": "AIH", "category": "Salud", "base_price": 105.80,
+                 "description": "IA médica", "icon": "fa-user-md"}
             ]
 
             for company_data in companies:
@@ -313,6 +440,16 @@ def register():
         db.session.add(user)
         db.session.commit()
 
+        # Send email in background
+        import threading
+        def send_email_background():
+            with app.app_context():
+                send_welcome_email(user, password)
+
+        email_thread = threading.Thread(target=send_email_background)
+        email_thread.daemon = True
+        email_thread.start()
+
         session['user_id'] = user.id
         session.permanent = True
 
@@ -377,6 +514,7 @@ def get_profile():
 
 
 @app.route('/companies', methods=['GET'])
+@cache.cached(timeout=300)  # Cache for 5 minutes
 def get_companies():
     try:
         companies = Company.query.all()
@@ -461,6 +599,19 @@ def buy_stocks():
         user.total_invested += total_cost
         user.investments_count += 1
         db.session.commit()
+
+        # Send growth email in background
+        import threading
+        def send_growth_notification():
+            import time
+            time.sleep(30)
+            growth_percentage = random.uniform(120, 250)
+            with app.app_context():
+                send_stock_growth_email(user, company, growth_percentage)
+
+        thread = threading.Thread(target=send_growth_notification)
+        thread.daemon = True
+        thread.start()
 
         return jsonify({
             'message': '¡Acciones compradas exitosamente!',
@@ -647,6 +798,52 @@ def admin_remove_admin():
         return handle_db_error(e)
 
 
+@app.route('/admin/user_info/<int:user_id>', methods=['GET'])
+def admin_get_user_info(user_id):
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
+
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+
+        return jsonify({'user': user.to_dict()})
+    except Exception as e:
+        logger.error(f"Get user info error: {str(e)}")
+        return handle_db_error(e)
+
+
+@app.route('/admin/stats', methods=['GET'])
+def admin_get_stats():
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
+
+        admin = db.session.get(User, session['user_id'])
+        if not admin or not admin.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        total_users = User.query.count()
+        total_balance = db.session.query(db.func.sum(User.balance)).scalar() or 0
+        total_invested = db.session.query(db.func.sum(User.total_invested)).scalar() or 0
+        total_profit = db.session.query(db.func.sum(User.total_profit)).scalar() or 0
+
+        return jsonify({
+            'total_users': total_users,
+            'total_balance': total_balance,
+            'total_invested': total_invested,
+            'total_profit': total_profit
+        })
+    except Exception as e:
+        logger.error(f"Get stats error: {str(e)}")
+        return handle_db_error(e)
+
+
 @app.route('/admin/send_bulk_email', methods=['POST'])
 def admin_send_bulk_email():
     try:
@@ -669,6 +866,7 @@ def admin_send_bulk_email():
         if not subject or not message:
             return jsonify({'error': 'El asunto y el mensaje son obligatorios'}), 400
 
+        # Get recipients
         recipients = []
         if send_to_all:
             users = User.query.all()
@@ -685,22 +883,31 @@ def admin_send_bulk_email():
         if not recipients:
             return jsonify({'error': 'No se encontraron destinatarios válidos'}), 400
 
+        # Send emails in batches to avoid timeout
+        batch_size = 10
         success_count = 0
         error_count = 0
 
-        for email in recipients:
-            try:
-                msg = Message(
-                    subject=subject,
-                    sender=app.config['MAIL_DEFAULT_SENDER'],
-                    recipients=[email]
-                )
-                msg.body = f"{subject}\n\n{message}\n\nClean.Invest"
-                mail.send(msg)
-                success_count += 1
-            except Exception as e:
-                logger.error(f"Email error to {email}: {str(e)}")
-                error_count += 1
+        with mail.connect() as conn:
+            for i in range(0, len(recipients), batch_size):
+                batch = recipients[i:i + batch_size]
+                for email in batch:
+                    try:
+                        msg = Message(
+                            subject=subject,
+                            sender=app.config['MAIL_DEFAULT_SENDER'],
+                            recipients=[email],
+                            body=f"{subject}\n\n{message}\n\nClean.Invest\n\n{os.getenv('SITE_URL', 'https://clean-invest.up.railway.app')}"
+                        )
+                        conn.send(msg)
+                        success_count += 1
+                        logger.info(f"Email sent to {email}")
+                    except Exception as e:
+                        logger.error(f"Email error to {email}: {str(e)}")
+                        error_count += 1
+
+                # Small delay between batches
+                time.sleep(0.1)
 
         return jsonify({
             'message': f'Email enviado exitosamente a {success_count} usuarios',
@@ -710,7 +917,7 @@ def admin_send_bulk_email():
         })
     except Exception as e:
         logger.error(f"Bulk email error: {str(e)}")
-        return handle_db_error(e)
+        return jsonify({'error': 'Error al enviar emails. Inténtalo con menos destinatarios.'}), 500
 
 
 # Support chat routes
@@ -916,6 +1123,23 @@ def get_active_chats():
         return handle_db_error(e)
 
 
+@app.route('/support/chats/closed', methods=['GET'])
+def get_closed_chats():
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
+
+        user = db.session.get(User, session['user_id'])
+        if not user or not user.is_admin:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        chats = SupportChat.query.filter_by(status='closed').order_by(SupportChat.closed_at.desc()).all()
+        return jsonify({'chats': [chat.to_dict() for chat in chats]})
+    except Exception as e:
+        logger.error(f"Get closed chats error: {str(e)}")
+        return handle_db_error(e)
+
+
 @app.route('/support/chat/<int:chat_id>/join', methods=['POST'])
 def join_chat(chat_id):
     try:
@@ -954,6 +1178,44 @@ def join_chat(chat_id):
         return jsonify({'chat': chat.to_dict()})
     except Exception as e:
         logger.error(f"Join chat error: {str(e)}")
+        return handle_db_error(e)
+
+
+@app.route('/support/chat/<int:chat_id>/close', methods=['POST'])
+def close_chat(chat_id):
+    try:
+        if 'user_id' not in session:
+            return jsonify({'error': 'No has iniciado sesión'}), 401
+
+        user = db.session.get(User, session['user_id'])
+        if not user:
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+
+        chat = db.session.get(SupportChat, chat_id)
+        if not chat:
+            return jsonify({'error': 'Chat no encontrado'}), 404
+
+        if not user.is_admin or chat.admin_id != user.id:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        chat.status = 'closed'
+        chat.closed_at = datetime.now(timezone.utc)
+
+        admin_id = chat.admin_id
+        chat.admin_id = None
+
+        msg = ChatMessage(
+            chat_id=chat_id,
+            sender_id=admin_id,
+            message="El chat ha sido cerrado. Si necesitas más ayuda, envía un nuevo mensaje.",
+            is_system=True
+        )
+        db.session.add(msg)
+
+        db.session.commit()
+        return jsonify({'chat': chat.to_dict()})
+    except Exception as e:
+        logger.error(f"Close chat error: {str(e)}")
         return handle_db_error(e)
 
 
