@@ -6,6 +6,11 @@
     "startCommand": "gunicorn app:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
-    "restartPolicyType": "ON_FAILURE"
+    "restartPolicyType": "ON_FAILURE",
+    "healthcheck": {
+      "path": "/",
+      "port": $PORT,
+      "timeout": 100
+    }
   }
 }

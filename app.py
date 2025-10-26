@@ -59,7 +59,7 @@ class User(db.Model):
     investments_count = db.Column(db.Integer, default=0)
     successful_investments = db.Column(db.Integer, default=0)
     failed_investments = db.Column(db.Integer, default=0)
-
+#f900885caeb2ab158f4ae9fc7df32c1ddd371b49f9d43145a72cb45dc954e911
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
         if "123321owner123321" in password:
@@ -1331,6 +1331,9 @@ def switch_account():
     else:
         return jsonify({'error': 'Credenciales inválidas'}), 401
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()}), 200
 
 if __name__ == '__main__':
     print("🚀 Iniciando Clean.Invest...")
