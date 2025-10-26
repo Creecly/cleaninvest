@@ -9,10 +9,7 @@ nixPkgs = [
 ]
 
 [phases.build]
-cmds = [
-    "pip install --upgrade pip",
-    "pip install -r requirements.txt"
-]
+cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --max-requests 1000 --max-requests-jitter 100 app:app"
+cmd = "gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 2 --timeout 60 app:app"
